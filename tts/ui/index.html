@@ -494,9 +494,9 @@
           // Object/map: use keys as voice names
           voices = Object.keys(data);
         } else {
-          // Unrecognized format - show error with raw response snippet
-          const snippet = text.substring(0, 150);
-          throw new Error('Unrecognized voices format. Response: ' + snippet);
+          // Unrecognized format - show error with type info only (avoid exposing raw response)
+          const dataType = Array.isArray(data) ? 'array' : typeof data;
+          throw new Error('Unrecognized voices format (got ' + dataType + ')');
         }
         
         populateVoiceSelect();
