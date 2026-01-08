@@ -2,20 +2,18 @@ services:
   # Whisper ASR Backend (GPU-enabled)
   whisper-asr:
     image: onerahmet/openai-whisper-asr-webservice:v1.3.0-gpu
-    container_name: quickyap-whisper-asr
+    container_name: yap-whisper-asr
     restart: unless-stopped
     environment:
       - ASR_MODEL=${ASR_MODEL:-base}
       - ASR_ENGINE=${ASR_ENGINE:-openai_whisper}
     volumes:
       - ${WHISPER_MODELS_PATH:-/srv/whisper-asr/models}:/root/.cache/whisper
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    # GPU configuration compatible with docker compose
+    device_requests:
+      - driver: nvidia
+        count: all
+        capabilities: [gpu]
     networks:
       - caddy
     labels:
@@ -27,7 +25,7 @@ services:
   # Static UI served by nginx
   asr-ui:
     image: nginx:alpine
-    container_name: quickyap-asr-ui
+    container_name: yap-asr-ui
     restart: unless-stopped
     volumes:
       - ./ui:/usr/share/nginx/html:ro
@@ -42,4 +40,5 @@ services:
 
 networks:
   caddy:
+    name: ${CADDY_NETWORK:-caddy}
     external: true

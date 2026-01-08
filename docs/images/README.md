@@ -1,6 +1,6 @@
 # Screenshots
 
-This directory contains screenshots for the QuickYap documentation.
+This directory contains screenshots for the Yap documentation.
 
 ## Required Screenshots
 
