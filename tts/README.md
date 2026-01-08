@@ -1,4 +1,4 @@
-# QuickYap - Quick TTS
+# Yap - Quick TTS
 
 Text-to-speech synthesis using Piper TTS.
 
@@ -71,7 +71,7 @@ The default voice selection prefers `en_GB-cori-high`. Download it:
 
 ```bash
 # Navigate to models directory
-cd ${QUICKYAP_TTS_MODELS_DIR:-/srv/piper/models}
+cd ${YAP_TTS_MODELS_DIR:-/srv/piper/models}
 
 # Download Cori high quality (recommended)
 wget https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/cori/high/en_GB-cori-high.onnx
@@ -101,7 +101,7 @@ curl http://localhost:5000/voices
 # Expected: ["en_GB-cori-high"]
 
 # For Caddy mode, use your domain:
-curl -k https://$QUICKYAP_TTS_DOMAIN/voices
+curl -k https://$YAP_TTS_DOMAIN/voices
 ```
 
 If `voices_count` is 0, check:

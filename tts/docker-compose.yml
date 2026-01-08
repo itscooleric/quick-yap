@@ -2,7 +2,7 @@ services:
   # Piper TTS Backend
   piper-tts:
     build: .
-    container_name: quickyap-piper-tts
+    container_name: yap-piper-tts
     restart: unless-stopped
     volumes:
       - ${PIPER_MODELS_PATH:-/srv/piper/models}:/models:ro
@@ -19,7 +19,7 @@ services:
   # Static UI served by nginx
   tts-ui:
     image: nginx:alpine
-    container_name: quickyap-tts-ui
+    container_name: yap-tts-ui
     restart: unless-stopped
     volumes:
       - ./ui:/usr/share/nginx/html:ro

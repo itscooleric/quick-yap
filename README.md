@@ -1,4 +1,4 @@
-# QuickYap
+# Yap
 
 ```
         /\  __  /\
@@ -17,7 +17,7 @@ Self-hosted LAN web tools for speech-to-text (ASR) and text-to-speech (TTS).
 
 ## Overview
 
-QuickYap provides two self-hosted web applications:
+Yap provides two self-hosted web applications:
 
 | Tool | Description | Backend |
 |------|-------------|---------|
@@ -53,7 +53,7 @@ Both tools run as Docker containers with a terminal-style dark UI, designed for 
 
 ## Quick Start
 
-QuickYap supports **two run modes**:
+Yap supports **two run modes**:
 1. **Production mode** (default): Uses Caddy reverse proxy with automatic HTTPS
 2. **Local mode**: Direct port access for testing without Caddy
 
@@ -84,23 +84,23 @@ Edit `.env` to customize your setup:
 
 ```bash
 # ASR Configuration
-QUICKYAP_ASR_DOMAIN=asr.yourdomain.com
-QUICKYAP_ASR_MODELS_DIR=/srv/whisper-asr/models
-QUICKYAP_ASR_MODEL=base
+YAP_ASR_DOMAIN=asr.yourdomain.com
+YAP_ASR_MODELS_DIR=/srv/whisper-asr/models
+YAP_ASR_MODEL=base
 
 # TTS Configuration  
-QUICKYAP_TTS_DOMAIN=tts.yourdomain.com
-QUICKYAP_TTS_MODELS_DIR=/srv/piper/models
+YAP_TTS_DOMAIN=tts.yourdomain.com
+YAP_TTS_MODELS_DIR=/srv/piper/models
 
 # Network (for Caddy mode)
-QUICKYAP_CADDY_NETWORK=caddy
+YAP_CADDY_NETWORK=caddy
 ```
 
 #### 3. Create Model Directories
 
 ```bash
-sudo mkdir -p $QUICKYAP_ASR_MODELS_DIR
-sudo mkdir -p $QUICKYAP_TTS_MODELS_DIR
+sudo mkdir -p $YAP_ASR_MODELS_DIR
+sudo mkdir -p $YAP_TTS_MODELS_DIR
 ```
 
 #### 4. Download TTS Voice Models
@@ -108,7 +108,7 @@ sudo mkdir -p $QUICKYAP_TTS_MODELS_DIR
 The TTS service requires voice models to work. Download at least one:
 
 ```bash
-cd $QUICKYAP_TTS_MODELS_DIR
+cd $YAP_TTS_MODELS_DIR
 
 # Recommended: British English Cori (high quality)
 wget https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/cori/high/en_GB-cori-high.onnx
@@ -170,22 +170,22 @@ Access via localhost:
 
 ### Environment Variables
 
-QuickYap uses a hierarchical configuration system:
+Yap uses a hierarchical configuration system:
 
-1. **Root `.env`** (optional) - Sets global defaults using `QUICKYAP_*` prefixed variables
+1. **Root `.env`** (optional) - Sets global defaults using `YAP_*` prefixed variables
 2. **Service-specific `.env`** in `asr/` and `tts/` - Can override root values
 
 Root variables (in `.env.example`):
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `QUICKYAP_ASR_DOMAIN` | ASR domain for Caddy | `asr.example.internal` |
-| `QUICKYAP_ASR_MODELS_DIR` | Host path for Whisper models | `/srv/whisper-asr/models` |
-| `QUICKYAP_ASR_MODEL` | Whisper model size | `base` |
-| `QUICKYAP_ASR_ENGINE` | ASR engine | `openai_whisper` |
-| `QUICKYAP_TTS_DOMAIN` | TTS domain for Caddy | `tts.example.internal` |
-| `QUICKYAP_TTS_MODELS_DIR` | Host path for Piper voices | `/srv/piper/models` |
-| `QUICKYAP_CADDY_NETWORK` | Docker network name | `caddy` |
+| `YAP_ASR_DOMAIN` | ASR domain for Caddy | `asr.example.internal` |
+| `YAP_ASR_MODELS_DIR` | Host path for Whisper models | `/srv/whisper-asr/models` |
+| `YAP_ASR_MODEL` | Whisper model size | `base` |
+| `YAP_ASR_ENGINE` | ASR engine | `openai_whisper` |
+| `YAP_TTS_DOMAIN` | TTS domain for Caddy | `tts.example.internal` |
+| `YAP_TTS_MODELS_DIR` | Host path for Piper voices | `/srv/piper/models` |
+| `YAP_CADDY_NETWORK` | Docker network name | `caddy` |
 
 ### Whisper Model Sizes
 
@@ -231,7 +231,7 @@ quick-yap/
 
 ## Makefile Helpers
 
-Common commands for managing QuickYap services:
+Common commands for managing Yap services:
 
 ```bash
 make help           # Show all available commands
@@ -301,7 +301,7 @@ The TTS backend will start successfully even without voice models, but it will d
 
 3. Verify the models are in the correct directory:
    ```bash
-   ls -la $QUICKYAP_TTS_MODELS_DIR
+   ls -la $YAP_TTS_MODELS_DIR
    # Should show .onnx and .onnx.json files
    ```
 
@@ -312,7 +312,7 @@ The TTS backend will start successfully even without voice models, but it will d
    # Should return: {"status":"ok","voices_count":1}
    
    # Caddy mode:
-   curl -k https://$QUICKYAP_TTS_DOMAIN/health
+   curl -k https://$YAP_TTS_DOMAIN/health
    ```
 
 5. List available voices:
@@ -321,7 +321,7 @@ The TTS backend will start successfully even without voice models, but it will d
    curl http://localhost:5000/voices
    
    # Caddy mode:
-   curl -k https://$QUICKYAP_TTS_DOMAIN/voices
+   curl -k https://$YAP_TTS_DOMAIN/voices
    ```
 
 **Voice files present but not detected**
@@ -355,7 +355,7 @@ If GPU isn't detected, ensure:
 
 **Model download slow**
 - First startup downloads the Whisper model
-- Models are cached in `$QUICKYAP_ASR_MODELS_DIR` for subsequent runs
+- Models are cached in `$YAP_ASR_MODELS_DIR` for subsequent runs
 - Larger models (medium, large) take longer to download
 
 ### General Issues
@@ -396,4 +396,4 @@ MIT - See [LICENSE](LICENSE)
 
 ---
 
-*QuickYap - yap fast / listen faster*
+*Yap - yap fast / listen faster*

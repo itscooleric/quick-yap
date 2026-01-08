@@ -2,7 +2,7 @@ services:
   # Whisper ASR Backend (GPU-enabled)
   whisper-asr:
     image: onerahmet/openai-whisper-asr-webservice:v1.3.0-gpu
-    container_name: quickyap-whisper-asr
+    container_name: yap-whisper-asr
     restart: unless-stopped
     environment:
       - ASR_MODEL=${ASR_MODEL:-base}
@@ -25,7 +25,7 @@ services:
   # Static UI served by nginx
   asr-ui:
     image: nginx:alpine
-    container_name: quickyap-asr-ui
+    container_name: yap-asr-ui
     restart: unless-stopped
     volumes:
       - ./ui:/usr/share/nginx/html:ro

@@ -1,5 +1,5 @@
 """
-QuickYap TTS API - Piper Text-to-Speech Service
+Yap TTS API - Piper Text-to-Speech Service
 
 Provides REST endpoints for text-to-speech synthesis using Piper TTS.
 """
@@ -23,7 +23,7 @@ _voice_cache = {}
 def log_startup_info():
     """Log startup information about models directory and available voices."""
     print("=" * 60, file=sys.stderr)
-    print("QuickYap TTS Backend Starting", file=sys.stderr)
+    print("Yap TTS Backend Starting", file=sys.stderr)
     print("=" * 60, file=sys.stderr)
     print(f"Models directory: {MODELS_PATH}", file=sys.stderr)
     print(f"Models directory exists: {MODELS_PATH.exists()}", file=sys.stderr)
@@ -180,7 +180,7 @@ def synthesize(voice):
 def index():
     """API info."""
     return jsonify({
-        'name': 'QuickYap TTS API',
+        'name': 'Yap TTS API',
         'version': '1.0.0',
         'endpoints': {
             '/health': 'Health check',

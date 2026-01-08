@@ -2,7 +2,7 @@
 
 # Default target
 help:
-	@echo "QuickYap Makefile"
+	@echo "Yap Makefile"
 	@echo ""
 	@echo "ASR (Quick Mic) targets:"
 	@echo "  make asr-up        - Start ASR services"
@@ -52,7 +52,7 @@ tts-health:
 	@echo "Note: Update the domain/port based on your setup"
 	@echo ""
 	@echo "For Caddy setup, use:"
-	@echo "  curl -k https://\$$QUICKYAP_TTS_DOMAIN/health"
+	@echo "  curl -k https://\$$YAP_TTS_DOMAIN/health"
 	@echo ""
 	@echo "For local setup, use:"
 	@echo "  curl http://localhost:5000/health"
@@ -62,7 +62,7 @@ tts-voices:
 	@echo "Note: Update the domain/port based on your setup"
 	@echo ""
 	@echo "For Caddy setup, use:"
-	@echo "  curl -k https://\$$QUICKYAP_TTS_DOMAIN/voices"
+	@echo "  curl -k https://\$$YAP_TTS_DOMAIN/voices"
 	@echo ""
 	@echo "For local setup, use:"
 	@echo "  curl http://localhost:5000/voices"
@@ -72,8 +72,8 @@ tts-model-cori:
 	@echo "Commands to download Cori voice model:"
 	@echo ""
 	@echo "  # Create models directory (if needed)"
-	@echo "  sudo mkdir -p \$$QUICKYAP_TTS_MODELS_DIR"
-	@echo "  cd \$$QUICKYAP_TTS_MODELS_DIR"
+	@echo "  sudo mkdir -p \$$YAP_TTS_MODELS_DIR"
+	@echo "  cd \$$YAP_TTS_MODELS_DIR"
 	@echo ""
 	@echo "  # Download Cori high quality (recommended)"
 	@echo "  wget https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/cori/high/en_GB-cori-high.onnx"

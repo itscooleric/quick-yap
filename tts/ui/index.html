@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickYap - Quick TTS</title>
+  <title>Yap - Quick TTS</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <style>
     :root {
@@ -349,7 +349,7 @@
     \  /__\  /
      --------
       </pre>
-      <h1>QuickYap // Quick TTS</h1>
+      <h1>Yap // Quick TTS</h1>
       <p class="tagline">yap fast / listen faster</p>
     </header>
     
@@ -430,7 +430,7 @@
     </main>
     
     <footer>
-      <p>QuickYap - Self-hosted speech tools</p>
+      <p>Yap - Self-hosted speech tools</p>
     </footer>
   </div>
 
@@ -505,7 +505,7 @@
       }
       
       // Try to restore last selected voice from localStorage
-      const savedVoice = localStorage.getItem('quickyap-tts-voice');
+      const savedVoice = localStorage.getItem('yap-tts-voice');
       
       // Find default voice (prefer saved, then en_GB-cori-high, then en_GB-cori-medium)
       let defaultVoice = voices[0];
@@ -566,7 +566,7 @@
     voiceSelect.addEventListener('change', () => {
       // Save selected voice to localStorage
       if (voiceSelect.value) {
-        localStorage.setItem('quickyap-tts-voice', voiceSelect.value);
+        localStorage.setItem('yap-tts-voice', voiceSelect.value);
       }
       updateSynthesizeButton();
     });
@@ -623,7 +623,7 @@
         // Setup Media Session API for lock screen controls
         if ('mediaSession' in navigator) {
           navigator.mediaSession.metadata = new MediaMetadata({
-            title: 'QuickYap TTS',
+            title: 'Yap TTS',
             artist: voice,
             album: 'Text-to-Speech'
           });
@@ -663,7 +663,7 @@
       
       const a = document.createElement('a');
       a.href = currentAudioUrl;
-      a.download = `quickyap-${voiceSelect.value}-${Date.now()}.wav`;
+      a.download = `yap-${voiceSelect.value}-${Date.now()}.wav`;
       a.click();
     });
 

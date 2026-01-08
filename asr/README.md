@@ -1,4 +1,4 @@
-# QuickYap - Quick Mic (ASR)
+# Yap - Quick Mic (ASR)
 
 Speech-to-text transcription using OpenAI Whisper.
 
