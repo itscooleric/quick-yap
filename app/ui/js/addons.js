@@ -174,6 +174,9 @@ export function initAddonPanel() {
   });
 }
 
+// Maximum prompt length for Ollama requests
+const MAX_OLLAMA_PROMPT_LENGTH = 50000;
+
 // Ollama Summarize addon renderer
 function renderOllamaSummarize(container, ctx) {
   container.classList.add('ollama-addon');
@@ -220,10 +223,9 @@ function renderOllamaSummarize(container, ctx) {
     }
 
     // Limit total prompt size
-    const maxLength = 50000;
     const fullPrompt = prompt + '\n\n' + transcriptText;
-    if (fullPrompt.length > maxLength) {
-      errorDiv.textContent = 'Transcript too long. Max ' + maxLength + ' characters.';
+    if (fullPrompt.length > MAX_OLLAMA_PROMPT_LENGTH) {
+      errorDiv.textContent = 'Transcript too long. Max ' + MAX_OLLAMA_PROMPT_LENGTH + ' characters.';
       errorDiv.style.display = 'block';
       return;
     }

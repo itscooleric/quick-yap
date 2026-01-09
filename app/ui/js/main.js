@@ -58,11 +58,12 @@ function switchTab(tabName) {
 
 // Check backend availability
 async function checkBackends() {
-  // Check ASR
+  // Check ASR - error means backend unavailable
   try {
     const response = await fetch('/asr/docs');
     asrEnabled = response.ok;
-  } catch {
+  } catch (err) {
+    // Network error or backend not running
     asrEnabled = false;
   }
   

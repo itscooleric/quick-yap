@@ -19,13 +19,7 @@ async function loadVoices() {
       throw new Error('Failed to fetch voices: ' + response.status);
     }
 
-    const text = await response.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (parseErr) {
-      throw new Error('Invalid JSON response');
-    }
+    const data = await response.json();
 
     // Normalize response to array of strings
     if (Array.isArray(data)) {

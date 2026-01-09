@@ -165,13 +165,16 @@ function drawBarMeter() {
   const barWidth = width / BAR_COUNT;
   const gap = 2;
   const binSize = Math.floor(frequencyData.length / BAR_COUNT);
+  if (binSize === 0) return;
 
   for (let i = 0; i < BAR_COUNT; i++) {
     let sum = 0;
-    for (let j = 0; j < binSize; j++) {
-      sum += frequencyData[i * binSize + j];
+    const startIdx = i * binSize;
+    const endIdx = Math.min(startIdx + binSize, frequencyData.length);
+    for (let j = startIdx; j < endIdx; j++) {
+      sum += frequencyData[j];
     }
-    const avg = sum / binSize;
+    const avg = sum / (endIdx - startIdx);
 
     const barHeight = Math.max(2, (avg / 255) * height);
     const x = i * barWidth;
@@ -700,6 +703,7 @@ export function init(container) {
         elements.transcript.value = text;
         elements.copyBtn.disabled = !text;
         elements.downloadTxtBtn.disabled = !text;
+        // Note: This replaces the transcript directly, bypassing clip-based display
       }
     },
     getClips: () => clips.slice()
