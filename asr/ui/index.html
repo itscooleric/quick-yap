@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yap - Quick Mic</title>
   <link rel="icon" type="image/svg+xml" href="/yap-logo-purple.svg">
+  <script src="config.js"></script>
   <style>
     :root {
       --bg-primary: #0a0a0f;
@@ -49,6 +50,38 @@
       padding: 1rem 0 1.5rem 0;
       margin-bottom: 1.5rem;
       border-bottom: 1px solid var(--border);
+    }
+    
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+    }
+    
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      transition: all 0.15s ease;
+    }
+    
+    .nav-links a:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    
+    .nav-links a.active {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-glow);
     }
     
     h1 {
@@ -223,6 +256,190 @@
       color: #fff;
     }
     
+    button.small {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.7rem;
+    }
+    
+    button.danger {
+      color: var(--error);
+      border-color: var(--error);
+    }
+    
+    button.danger:hover:not(:disabled) {
+      background: var(--error);
+      color: #fff;
+    }
+    
+    /* Clips list */
+    .clips-list {
+      margin-top: 1rem;
+    }
+    
+    .clips-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .clips-list-title {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .clip-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.65rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin-bottom: 0.35rem;
+      font-size: 0.8rem;
+    }
+    
+    .clip-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .clip-name {
+      color: var(--text-primary);
+    }
+    
+    .clip-duration {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+    
+    .clip-status {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    
+    .clip-status.recorded {
+      background: var(--accent-glow);
+      color: var(--accent);
+    }
+    
+    .clip-status.queued {
+      background: rgba(100, 100, 120, 0.2);
+      color: var(--text-secondary);
+    }
+    
+    .clip-status.working {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+    
+    .clip-status.transcribed {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--success);
+    }
+    
+    .clip-status.error {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--error);
+    }
+    
+    .clip-actions {
+      display: flex;
+      gap: 0.35rem;
+    }
+    
+    .no-clips {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    /* Formatting settings */
+    .formatting-settings {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    .formatting-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .formatting-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .toggle-switch.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+    }
+    
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      background: var(--text-secondary);
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    
+    .toggle-switch.active::after {
+      left: 18px;
+      background: #fff;
+    }
+    
+    .formatting-select {
+      padding: 0.35rem 0.5rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    
+    .formatting-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
     .transcript-area {
       width: 100%;
       min-height: 140px;
@@ -268,6 +485,189 @@
       border-left-color: var(--success);
       color: var(--success);
       background: rgba(34, 197, 94, 0.08);
+    }
+
+    /* Non-modal window styles */
+    .addon-window {
+      position: fixed;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      min-width: 280px;
+      min-height: 180px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .addon-window-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+      cursor: move;
+      user-select: none;
+    }
+    
+    .addon-window-title {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .addon-window-close {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      line-height: 1;
+    }
+    
+    .addon-window-close:hover {
+      color: var(--error);
+      background: transparent;
+    }
+    
+    .addon-window-content {
+      flex: 1;
+      padding: 0.75rem;
+      overflow: auto;
+    }
+    
+    .addon-window-resize {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 16px;
+      height: 16px;
+      cursor: nwse-resize;
+    }
+    
+    .addon-window-resize::after {
+      content: '';
+      position: absolute;
+      right: 3px;
+      bottom: 3px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--border-light);
+      border-bottom: 2px solid var(--border-light);
+    }
+
+    /* Addon panel manager */
+    .addon-panel {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      width: 220px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      z-index: 999;
+    }
+    
+    .addon-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .addon-panel-title {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .addon-panel-list {
+      padding: 0.5rem;
+    }
+    
+    .addon-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin-bottom: 0.35rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    
+    .addon-item:hover {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+    
+    .addon-item-name {
+      font-size: 0.8rem;
+      color: var(--text-primary);
+    }
+    
+    .addon-item-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    /* Ollama addon specific */
+    .ollama-addon textarea {
+      width: 100%;
+      min-height: 60px;
+      padding: 0.5rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      resize: vertical;
+      margin-bottom: 0.5rem;
+    }
+    
+    .ollama-addon textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .ollama-addon .output {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      max-height: 200px;
+      overflow: auto;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+    }
+    
+    .ollama-addon .error-msg {
+      color: var(--error);
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    
+    .ollama-addon .btn-row {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
     }
     
     footer {
@@ -322,13 +722,34 @@
       button {
         width: 100%;
       }
+      .clip-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      .clip-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+      .addon-panel {
+        right: 10px;
+        left: 10px;
+        width: auto;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>yap asr</h1>
+      <div class="header-row">
+        <h1>yap asr</h1>
+        <div class="nav-links">
+          <a href="#" class="active" id="navAsr">ASR</a>
+          <a href="#" id="navTts">TTS</a>
+          <button class="small" id="addonsBtn">Add-ons</button>
+        </div>
+      </div>
       <p class="tagline">local automatic speech recognition</p>
     </header>
     
@@ -351,7 +772,18 @@
         <div class="controls">
           <button id="recordBtn" class="primary">Record</button>
           <button id="stopBtn" disabled>Stop</button>
-          <button id="transcribeBtn" disabled>Transcribe</button>
+          <button id="transcribeAllBtn" disabled>Transcribe All</button>
+          <button id="clearBtn" disabled>Clear</button>
+        </div>
+
+        <div class="clips-list" id="clipsList">
+          <div class="clips-list-header">
+            <span class="clips-list-title">Clips</span>
+            <span id="clipsCount" class="clips-list-title">0</span>
+          </div>
+          <div id="clipsContainer">
+            <div class="no-clips">No clips recorded</div>
+          </div>
         </div>
       </div>
       
@@ -362,7 +794,20 @@
         <div class="output-controls">
           <button id="copyBtn" disabled>Copy Text</button>
           <button id="downloadTxtBtn" disabled>Download .txt</button>
-          <button id="downloadAudioBtn" disabled>Download Audio</button>
+        </div>
+
+        <div class="formatting-settings">
+          <div class="formatting-row">
+            <span class="formatting-label">Formatting:</span>
+            <div class="toggle-container">
+              <div class="toggle-switch" id="cleanLineBreaksToggle" title="Clean line breaks"></div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Clean</span>
+            </div>
+            <select class="formatting-select" id="lineBreakMode">
+              <option value="paragraphs">Keep paragraphs</option>
+              <option value="single">Single line</option>
+            </select>
+          </div>
         </div>
         
         <div id="message" class="message" style="display: none;"></div>
@@ -374,25 +819,54 @@
     </footer>
   </div>
 
+  <!-- Addon panel (hidden by default) -->
+  <div class="addon-panel" id="addonPanel" style="display: none;">
+    <div class="addon-panel-header">
+      <span class="addon-panel-title">Add-ons</span>
+      <button class="addon-window-close" id="addonPanelClose">x</button>
+    </div>
+    <div class="addon-panel-list" id="addonPanelList"></div>
+  </div>
+
   <script>
-    // State
+    // ============ Configuration ============
+    const config = window.__YAP_CONFIG || {
+      asrUrl: '',
+      ttsUrl: '/tts/',
+      ollamaUrl: 'http://localhost:11434',
+      ollamaModel: 'llama3'
+    };
+
+    // Setup nav links
+    document.getElementById('navAsr').href = config.asrUrl || '#';
+    document.getElementById('navTts').href = config.ttsUrl || '#';
+
+    // ============ State ============
     let mediaRecorder = null;
     let audioChunks = [];
-    let audioBlob = null;
     let audioStream = null;
     let audioContext = null;
     let analyser = null;
     let animationId = null;
     let startTime = null;
     let timerInterval = null;
+    let clipIdCounter = 0;
 
-    // Elements
+    // Clips list: { id, createdAt, durationMs, mimeType, blob, objectUrl, status }
+    // status: 'recorded' | 'queued' | 'working' | 'transcribed' | 'error'
+    let clips = [];
+
+    // Formatting settings
+    let cleanLineBreaks = false;
+    let lineBreakMode = 'paragraphs'; // 'paragraphs' | 'single'
+
+    // ============ Elements ============
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
-    const transcribeBtn = document.getElementById('transcribeBtn');
+    const transcribeAllBtn = document.getElementById('transcribeAllBtn');
+    const clearBtn = document.getElementById('clearBtn');
     const copyBtn = document.getElementById('copyBtn');
     const downloadTxtBtn = document.getElementById('downloadTxtBtn');
-    const downloadAudioBtn = document.getElementById('downloadAudioBtn');
     const transcript = document.getElementById('transcript');
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
@@ -400,8 +874,16 @@
     const canvas = document.getElementById('waveform');
     const canvasCtx = canvas.getContext('2d');
     const messageEl = document.getElementById('message');
+    const clipsContainer = document.getElementById('clipsContainer');
+    const clipsCount = document.getElementById('clipsCount');
+    const cleanLineBreaksToggle = document.getElementById('cleanLineBreaksToggle');
+    const lineBreakModeSelect = document.getElementById('lineBreakMode');
+    const addonsBtn = document.getElementById('addonsBtn');
+    const addonPanel = document.getElementById('addonPanel');
+    const addonPanelClose = document.getElementById('addonPanelClose');
+    const addonPanelList = document.getElementById('addonPanelList');
 
-    // Initialize canvas with DPI correction
+    // ============ Canvas DPI correction ============
     function resizeCanvas() {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
@@ -412,13 +894,13 @@
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Status management
+    // ============ Status management ============
     function setStatus(status, text) {
       statusDot.className = 'status-dot ' + status;
       statusText.textContent = text;
     }
 
-    // Timer management
+    // ============ Timer management ============
     function updateTimer() {
       if (!startTime) return;
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -443,7 +925,7 @@
       timerEl.textContent = '00:00';
     }
 
-    // Bar meter visualization using frequency data
+    // ============ Bar meter visualization ============
     const BAR_COUNT = 48;
 
     function drawBarMeter() {
@@ -455,7 +937,7 @@
       const width = canvas.offsetWidth;
       const height = canvas.offsetHeight;
       
-      canvasCtx.fillStyle = '#252525';
+      canvasCtx.fillStyle = '#1a1a24';
       canvasCtx.fillRect(0, 0, width, height);
       
       const barWidth = width / BAR_COUNT;
@@ -463,18 +945,17 @@
       const binSize = Math.floor(frequencyData.length / BAR_COUNT);
       
       for (let i = 0; i < BAR_COUNT; i++) {
-        // Average the frequency bins for this bar
         let sum = 0;
         for (let j = 0; j < binSize; j++) {
           sum += frequencyData[i * binSize + j];
         }
         const avg = sum / binSize;
         
-        const barHeight = (avg / 255) * height;
+        const barHeight = Math.max(2, (avg / 255) * height);
         const x = i * barWidth;
         const y = height - barHeight;
         
-        canvasCtx.fillStyle = '#9b59b6';
+        canvasCtx.fillStyle = '#a855f7';
         canvasCtx.fillRect(x + gap / 2, y, barWidth - gap, barHeight);
       }
       
@@ -485,7 +966,7 @@
       const width = canvas.offsetWidth;
       const height = canvas.offsetHeight;
       
-      canvasCtx.fillStyle = '#252525';
+      canvasCtx.fillStyle = '#1a1a24';
       canvasCtx.fillRect(0, 0, width, height);
       
       const barWidth = width / BAR_COUNT;
@@ -494,13 +975,13 @@
       
       for (let i = 0; i < BAR_COUNT; i++) {
         const x = i * barWidth;
-        canvasCtx.fillStyle = '#333';
+        canvasCtx.fillStyle = '#3a3a4a';
         canvasCtx.fillRect(x + gap / 2, height - minHeight, barWidth - gap, minHeight);
       }
     }
     drawIdleBars();
 
-    // Get supported MIME type
+    // ============ MIME type handling ============
     function getSupportedMimeType() {
       const types = [
         'audio/webm;codecs=opus',
@@ -517,20 +998,112 @@
       return '';
     }
 
-    // Recording
+    function getExtensionFromMimeType(mimeType) {
+      if (mimeType.includes('ogg')) return 'ogg';
+      if (mimeType.includes('wav')) return 'wav';
+      if (mimeType.includes('mp3')) return 'mp3';
+      return 'webm';
+    }
+
+    // ============ Clips management ============
+    function updateClipsUI() {
+      clipsCount.textContent = clips.length;
+      
+      if (clips.length === 0) {
+        clipsContainer.innerHTML = '<div class="no-clips">No clips recorded</div>';
+        transcribeAllBtn.disabled = true;
+        clearBtn.disabled = true;
+        return;
+      }
+      
+      transcribeAllBtn.disabled = false;
+      clearBtn.disabled = false;
+      
+      clipsContainer.innerHTML = '';
+      clips.forEach((clip, index) => {
+        const div = document.createElement('div');
+        div.className = 'clip-item';
+        div.dataset.clipId = clip.id;
+        
+        const durationSec = Math.floor(clip.durationMs / 1000);
+        const mins = Math.floor(durationSec / 60).toString().padStart(2, '0');
+        const secs = (durationSec % 60).toString().padStart(2, '0');
+        
+        div.innerHTML = `
+          <div class="clip-info">
+            <span class="clip-name">Clip ${index + 1}</span>
+            <span class="clip-duration">${mins}:${secs}</span>
+            <span class="clip-status ${clip.status}">${clip.status}</span>
+          </div>
+          <div class="clip-actions">
+            <button class="small" data-action="transcribe" data-id="${clip.id}">Transcribe</button>
+            <button class="small" data-action="download" data-id="${clip.id}">Download</button>
+            <button class="small danger" data-action="remove" data-id="${clip.id}">X</button>
+          </div>
+        `;
+        clipsContainer.appendChild(div);
+      });
+    }
+
+    function addClip(blob, mimeType, durationMs) {
+      const id = ++clipIdCounter;
+      const objectUrl = URL.createObjectURL(blob);
+      const clip = {
+        id,
+        createdAt: new Date(),
+        durationMs,
+        mimeType,
+        blob,
+        objectUrl,
+        status: 'recorded'
+      };
+      clips.push(clip);
+      updateClipsUI();
+      return clip;
+    }
+
+    function removeClip(id) {
+      const index = clips.findIndex(c => c.id === id);
+      if (index !== -1) {
+        const clip = clips[index];
+        URL.revokeObjectURL(clip.objectUrl);
+        clips.splice(index, 1);
+        updateClipsUI();
+      }
+    }
+
+    function clearAllClips() {
+      clips.forEach(clip => URL.revokeObjectURL(clip.objectUrl));
+      clips = [];
+      transcript.value = '';
+      transcript.readOnly = true;
+      copyBtn.disabled = true;
+      downloadTxtBtn.disabled = true;
+      updateClipsUI();
+      setStatus('', 'Idle');
+    }
+
+    function updateClipStatus(id, status) {
+      const clip = clips.find(c => c.id === id);
+      if (clip) {
+        clip.status = status;
+        updateClipsUI();
+      }
+    }
+
+    // ============ Recording ============
     async function startRecording() {
       try {
         audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // Setup audio context and analyser
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
         analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.85;
         
         const source = audioContext.createMediaStreamSource(audioStream);
         source.connect(analyser);
         
-        // Setup MediaRecorder
         const mimeType = getSupportedMimeType();
         const options = mimeType ? { mimeType } : {};
         mediaRecorder = new MediaRecorder(audioStream, options);
@@ -544,7 +1117,10 @@
         
         mediaRecorder.onstop = () => {
           const actualMimeType = mediaRecorder.mimeType || 'audio/webm';
-          audioBlob = new Blob(audioChunks, { type: actualMimeType });
+          const blob = new Blob(audioChunks, { type: actualMimeType });
+          const durationMs = startTime ? Date.now() - startTime : 0;
+          
+          addClip(blob, actualMimeType, durationMs);
           
           stopTimer();
           if (animationId) {
@@ -553,17 +1129,16 @@
           }
           drawIdleBars();
           
-          // Cleanup
           if (audioStream) {
             audioStream.getTracks().forEach(track => track.stop());
           }
           if (audioContext) {
             audioContext.close();
+            audioContext = null;
+            analyser = null;
           }
           
-          setStatus('done', 'Recording saved');
-          transcribeBtn.disabled = false;
-          downloadAudioBtn.disabled = false;
+          setStatus('done', 'Clip saved');
         };
         
         mediaRecorder.start();
@@ -573,7 +1148,6 @@
         setStatus('recording', 'Recording...');
         recordBtn.disabled = true;
         stopBtn.disabled = false;
-        transcribeBtn.disabled = true;
         
       } catch (err) {
         console.error('Recording error:', err);
@@ -590,29 +1164,34 @@
       stopBtn.disabled = true;
     }
 
-    // Transcription
-    async function transcribe() {
-      if (!audioBlob) {
-        showMessage('No audio to transcribe', 'error');
-        return;
+    // ============ Text cleanup ============
+    function cleanupText(text) {
+      if (!cleanLineBreaks) return text;
+      
+      // Normalize CRLF to LF
+      let result = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      
+      if (lineBreakMode === 'paragraphs') {
+        // Collapse 3+ newlines to 2 (keep paragraph breaks)
+        result = result.replace(/\n{3,}/g, '\n\n');
+      } else if (lineBreakMode === 'single') {
+        // Replace all newline runs with single space
+        result = result.replace(/\n+/g, ' ');
+        // Collapse multiple spaces
+        result = result.replace(/ {2,}/g, ' ');
       }
       
-      setStatus('processing', 'Uploading...');
-      transcribeBtn.disabled = true;
-      recordBtn.disabled = true;
+      return result.trim();
+    }
+
+    // ============ Transcription ============
+    async function transcribeSingleClip(clip) {
+      updateClipStatus(clip.id, 'working');
       
       try {
         const formData = new FormData();
-        
-        // Determine file extension from MIME type
-        let ext = 'webm';
-        if (audioBlob.type.includes('ogg')) ext = 'ogg';
-        else if (audioBlob.type.includes('wav')) ext = 'wav';
-        else if (audioBlob.type.includes('mp3')) ext = 'mp3';
-        
-        formData.append('audio_file', audioBlob, `recording.${ext}`);
-        
-        setStatus('processing', 'Transcribing...');
+        const ext = getExtensionFromMimeType(clip.mimeType);
+        formData.append('audio_file', clip.blob, `recording.${ext}`);
         
         const response = await fetch('/asr?output=txt', {
           method: 'POST',
@@ -624,29 +1203,121 @@
         }
         
         const text = await response.text();
-        transcript.value = text.trim();
-        transcript.readOnly = false;
-        
-        setStatus('done', 'Done');
-        copyBtn.disabled = false;
-        downloadTxtBtn.disabled = false;
-        showMessage('Transcription complete', 'success');
+        updateClipStatus(clip.id, 'transcribed');
+        return cleanupText(text.trim());
         
       } catch (err) {
         console.error('Transcription error:', err);
-        setStatus('error', 'Error');
-        showMessage(`Transcription failed: ${err.message}`, 'error');
-      } finally {
-        transcribeBtn.disabled = false;
-        recordBtn.disabled = false;
+        updateClipStatus(clip.id, 'error');
+        throw err;
       }
     }
 
-    // Copy and download
+    async function transcribeAll() {
+      if (clips.length === 0) {
+        showMessage('No clips to transcribe', 'error');
+        return;
+      }
+      
+      setStatus('processing', 'Transcribing...');
+      transcribeAllBtn.disabled = true;
+      recordBtn.disabled = true;
+      
+      // Mark all as queued
+      clips.forEach(clip => {
+        if (clip.status === 'recorded') {
+          updateClipStatus(clip.id, 'queued');
+        }
+      });
+      
+      const results = [];
+      let hasError = false;
+      
+      for (let i = 0; i < clips.length; i++) {
+        const clip = clips[i];
+        if (clip.status === 'transcribed') {
+          // Skip already transcribed
+          continue;
+        }
+        
+        setStatus('processing', `Transcribing clip ${i + 1}/${clips.length}...`);
+        
+        try {
+          const text = await transcribeSingleClip(clip);
+          results.push({ clipIndex: i + 1, text });
+        } catch (err) {
+          hasError = true;
+          results.push({ clipIndex: i + 1, text: `[Error: ${err.message}]` });
+        }
+      }
+      
+      // Combine results
+      if (results.length > 0) {
+        const combined = results.map(r => {
+          return `--- Clip ${r.clipIndex} ---\n${r.text}`;
+        }).join('\n\n');
+        
+        transcript.value = combined;
+        transcript.readOnly = false;
+        copyBtn.disabled = false;
+        downloadTxtBtn.disabled = false;
+      }
+      
+      setStatus(hasError ? 'error' : 'done', hasError ? 'Done with errors' : 'Done');
+      showMessage(hasError ? 'Transcription completed with errors' : 'Transcription complete', hasError ? 'error' : 'success');
+      
+      transcribeAllBtn.disabled = false;
+      recordBtn.disabled = false;
+    }
+
+    async function transcribeSingle(clipId) {
+      const clip = clips.find(c => c.id === clipId);
+      if (!clip) return;
+      
+      setStatus('processing', 'Transcribing...');
+      
+      try {
+        const text = await transcribeSingleClip(clip);
+        
+        // Append to transcript
+        const clipIndex = clips.indexOf(clip) + 1;
+        const entry = `--- Clip ${clipIndex} ---\n${text}`;
+        
+        if (transcript.value) {
+          transcript.value += '\n\n' + entry;
+        } else {
+          transcript.value = entry;
+        }
+        
+        transcript.readOnly = false;
+        copyBtn.disabled = false;
+        downloadTxtBtn.disabled = false;
+        
+        setStatus('done', 'Done');
+        showMessage('Transcription complete', 'success');
+        
+      } catch (err) {
+        setStatus('error', 'Error');
+        showMessage(`Transcription failed: ${err.message}`, 'error');
+      }
+    }
+
+    // ============ Download functions ============
+    function downloadClip(clipId) {
+      const clip = clips.find(c => c.id === clipId);
+      if (!clip) return;
+      
+      const ext = getExtensionFromMimeType(clip.mimeType);
+      const a = document.createElement('a');
+      a.href = clip.objectUrl;
+      a.download = `clip-${clipId}-${Date.now()}.${ext}`;
+      a.click();
+    }
+
     function copyTranscript() {
       navigator.clipboard.writeText(transcript.value).then(() => {
         showMessage('Copied to clipboard', 'success');
-      }).catch(err => {
+      }).catch(() => {
         showMessage('Copy failed', 'error');
       });
     }
@@ -664,22 +1335,7 @@
       URL.revokeObjectURL(url);
     }
 
-    function downloadAudio() {
-      if (!audioBlob) return;
-      
-      let ext = 'webm';
-      if (audioBlob.type.includes('ogg')) ext = 'ogg';
-      else if (audioBlob.type.includes('wav')) ext = 'wav';
-      
-      const url = URL.createObjectURL(audioBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `recording-${Date.now()}.${ext}`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // Messages
+    // ============ Messages ============
     function showMessage(text, type = '') {
       messageEl.textContent = text;
       messageEl.className = 'message ' + type;
@@ -690,15 +1346,290 @@
       }, 4000);
     }
 
-    // Event listeners
+    // ============ Clip actions handler ============
+    clipsContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      
+      const action = btn.dataset.action;
+      const id = parseInt(btn.dataset.id, 10);
+      
+      if (action === 'transcribe') {
+        transcribeSingle(id);
+      } else if (action === 'download') {
+        downloadClip(id);
+      } else if (action === 'remove') {
+        if (confirm('Remove this clip?')) {
+          removeClip(id);
+        }
+      }
+    });
+
+    // ============ Clear button ============
+    clearBtn.addEventListener('click', () => {
+      if (confirm('Clear all clips and transcript?')) {
+        clearAllClips();
+        showMessage('Cleared', 'success');
+      }
+    });
+
+    // ============ Formatting settings ============
+    cleanLineBreaksToggle.addEventListener('click', () => {
+      cleanLineBreaks = !cleanLineBreaks;
+      cleanLineBreaksToggle.classList.toggle('active', cleanLineBreaks);
+    });
+
+    lineBreakModeSelect.addEventListener('change', () => {
+      lineBreakMode = lineBreakModeSelect.value;
+    });
+
+    // ============ Add-ons system ============
+    const addons = [
+      {
+        id: 'ollama-summarize',
+        name: 'Ollama Summarize',
+        description: 'Summarize transcript with Ollama',
+        render: renderOllamaSummarize
+      }
+    ];
+
+    // Addon context for accessing app state
+    function getAddonContext() {
+      return {
+        getClips: () => clips.slice(),
+        getTranscript: () => transcript.value,
+        setTranscript: (text) => {
+          transcript.value = text;
+          transcript.readOnly = false;
+          copyBtn.disabled = !text;
+          downloadTxtBtn.disabled = !text;
+        }
+      };
+    }
+
+    // Render addon panel list
+    function renderAddonList() {
+      addonPanelList.innerHTML = '';
+      addons.forEach(addon => {
+        const div = document.createElement('div');
+        div.className = 'addon-item';
+        div.innerHTML = `
+          <div>
+            <div class="addon-item-name">${addon.name}</div>
+            <div class="addon-item-desc">${addon.description}</div>
+          </div>
+        `;
+        div.addEventListener('click', () => openAddonWindow(addon));
+        addonPanelList.appendChild(div);
+      });
+    }
+    renderAddonList();
+
+    // Open addon panel
+    addonsBtn.addEventListener('click', () => {
+      addonPanel.style.display = addonPanel.style.display === 'none' ? 'block' : 'none';
+    });
+
+    addonPanelClose.addEventListener('click', () => {
+      addonPanel.style.display = 'none';
+    });
+
+    // ============ Non-modal window component ============
+    let windowZIndex = 1001;
+
+    function createAddonWindow(title, contentRenderer) {
+      const win = document.createElement('div');
+      win.className = 'addon-window';
+      win.style.top = '120px';
+      win.style.left = '50%';
+      win.style.transform = 'translateX(-50%)';
+      win.style.width = '360px';
+      win.style.height = '320px';
+      win.style.zIndex = ++windowZIndex;
+      
+      win.innerHTML = `
+        <div class="addon-window-header">
+          <span class="addon-window-title">${title}</span>
+          <button class="addon-window-close">x</button>
+        </div>
+        <div class="addon-window-content"></div>
+        <div class="addon-window-resize"></div>
+      `;
+      
+      document.body.appendChild(win);
+      
+      const header = win.querySelector('.addon-window-header');
+      const closeBtn = win.querySelector('.addon-window-close');
+      const content = win.querySelector('.addon-window-content');
+      const resizeHandle = win.querySelector('.addon-window-resize');
+      
+      // Close
+      closeBtn.addEventListener('click', () => {
+        win.remove();
+      });
+      
+      // Bring to front on click
+      win.addEventListener('mousedown', () => {
+        win.style.zIndex = ++windowZIndex;
+      });
+      
+      // Dragging
+      let isDragging = false;
+      let dragOffsetX = 0;
+      let dragOffsetY = 0;
+      
+      header.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        win.style.transform = 'none';
+        const rect = win.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+        e.preventDefault();
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        win.style.left = (e.clientX - dragOffsetX) + 'px';
+        win.style.top = (e.clientY - dragOffsetY) + 'px';
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+      
+      // Resizing
+      let isResizing = false;
+      let resizeStartX = 0;
+      let resizeStartY = 0;
+      let startWidth = 0;
+      let startHeight = 0;
+      
+      resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        resizeStartX = e.clientX;
+        resizeStartY = e.clientY;
+        startWidth = win.offsetWidth;
+        startHeight = win.offsetHeight;
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const newWidth = startWidth + (e.clientX - resizeStartX);
+        const newHeight = startHeight + (e.clientY - resizeStartY);
+        win.style.width = Math.max(280, newWidth) + 'px';
+        win.style.height = Math.max(180, newHeight) + 'px';
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isResizing = false;
+      });
+      
+      // Render content
+      contentRenderer(content, getAddonContext());
+      
+      return win;
+    }
+
+    function openAddonWindow(addon) {
+      addonPanel.style.display = 'none';
+      createAddonWindow(addon.name, addon.render);
+    }
+
+    // ============ Ollama Summarize addon ============
+    function renderOllamaSummarize(container, ctx) {
+      container.classList.add('ollama-addon');
+      
+      const ollamaUrl = config.ollamaUrl || 'http://localhost:11434';
+      const ollamaModel = config.ollamaModel || 'llama3';
+      
+      container.innerHTML = `
+        <div style="margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+          Prompt:
+        </div>
+        <textarea id="ollamaPrompt" placeholder="Enter a prompt, e.g.: Summarize the following transcript:">Summarize the following transcript:</textarea>
+        <div class="btn-row">
+          <button class="small primary" id="ollamaSummarizeBtn">Summarize</button>
+          <button class="small" id="ollamaReplaceBtn" disabled>Replace transcript</button>
+        </div>
+        <div class="output" id="ollamaOutput" style="display: none;"></div>
+        <div class="error-msg" id="ollamaError" style="display: none;"></div>
+      `;
+      
+      const promptInput = container.querySelector('#ollamaPrompt');
+      const summarizeBtn = container.querySelector('#ollamaSummarizeBtn');
+      const replaceBtn = container.querySelector('#ollamaReplaceBtn');
+      const outputDiv = container.querySelector('#ollamaOutput');
+      const errorDiv = container.querySelector('#ollamaError');
+      
+      let lastOutput = '';
+      
+      summarizeBtn.addEventListener('click', async () => {
+        const transcriptText = ctx.getTranscript();
+        if (!transcriptText) {
+          errorDiv.textContent = 'No transcript to summarize';
+          errorDiv.style.display = 'block';
+          outputDiv.style.display = 'none';
+          return;
+        }
+        
+        const prompt = promptInput.value.trim();
+        const fullPrompt = prompt + '\n\n' + transcriptText;
+        
+        summarizeBtn.disabled = true;
+        summarizeBtn.textContent = 'Working...';
+        errorDiv.style.display = 'none';
+        outputDiv.style.display = 'none';
+        
+        try {
+          const response = await fetch(`${ollamaUrl}/api/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: ollamaModel,
+              prompt: fullPrompt,
+              stream: false
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Ollama error: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          lastOutput = data.response || '';
+          
+          outputDiv.textContent = lastOutput;
+          outputDiv.style.display = 'block';
+          replaceBtn.disabled = !lastOutput;
+          
+        } catch (err) {
+          console.error('Ollama error:', err);
+          errorDiv.textContent = 'Could not connect to Ollama. Is it running at ' + ollamaUrl + '?';
+          errorDiv.style.display = 'block';
+        } finally {
+          summarizeBtn.disabled = false;
+          summarizeBtn.textContent = 'Summarize';
+        }
+      });
+      
+      replaceBtn.addEventListener('click', () => {
+        if (lastOutput) {
+          ctx.setTranscript(lastOutput);
+          showMessage('Transcript replaced', 'success');
+        }
+      });
+    }
+
+    // ============ Event listeners ============
     recordBtn.addEventListener('click', startRecording);
     stopBtn.addEventListener('click', stopRecording);
-    transcribeBtn.addEventListener('click', transcribe);
+    transcribeAllBtn.addEventListener('click', transcribeAll);
     copyBtn.addEventListener('click', copyTranscript);
     downloadTxtBtn.addEventListener('click', downloadTranscript);
-    downloadAudioBtn.addEventListener('click', downloadAudio);
 
-    // Keyboard shortcuts
+    // ============ Keyboard shortcuts ============
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && e.target === document.body) {
         e.preventDefault();
