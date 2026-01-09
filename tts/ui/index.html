@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yap - Quick TTS</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="config.js"></script>
   <style>
     :root {
       --bg-primary: #0a0a0f;
@@ -49,6 +50,38 @@
       padding: 1rem 0 1.5rem 0;
       margin-bottom: 1.5rem;
       border-bottom: 1px solid var(--border);
+    }
+    
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+    }
+    
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      transition: all 0.15s ease;
+    }
+    
+    .nav-links a:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    
+    .nav-links a.active {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-glow);
     }
     
     h1 {
@@ -403,7 +436,13 @@
 <body>
   <div class="container">
     <header>
-      <h1>yap tts</h1>
+      <div class="header-row">
+        <h1>yap tts</h1>
+        <div class="nav-links">
+          <a href="#" id="navAsr">ASR</a>
+          <a href="#" class="active" id="navTts">TTS</a>
+        </div>
+      </div>
       <p class="tagline">local text-to-speech</p>
     </header>
     
@@ -489,6 +528,16 @@
   </div>
 
   <script>
+    // Configuration
+    const config = window.__YAP_CONFIG || {
+      asrUrl: '/asr/',
+      ttsUrl: ''
+    };
+    
+    // Setup nav links
+    document.getElementById('navAsr').href = config.asrUrl || '#';
+    document.getElementById('navTts').href = config.ttsUrl || '#';
+
     // State
     let voices = [];
     let currentAudioUrl = null;
