@@ -4,20 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yap - Quick Mic</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="/yap-logo-purple.svg">
   <style>
     :root {
-      --bg-primary: #0d0d0d;
-      --bg-secondary: #1a1a1a;
-      --bg-tertiary: #252525;
-      --text-primary: #e0e0e0;
-      --text-secondary: #888;
-      --accent: #9b59b6;
-      --accent-dim: #7d3c98;
-      --border: #333;
-      --success: #27ae60;
-      --error: #c0392b;
-      --warning: #f39c12;
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a24;
+      --text-primary: #c8c8d0;
+      --text-secondary: #6a6a7a;
+      --text-muted: #4a4a5a;
+      --accent: #a855f7;
+      --accent-dim: #7c3aed;
+      --accent-glow: rgba(168, 85, 247, 0.15);
+      --border: #2a2a3a;
+      --border-light: #3a3a4a;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
     }
     
     * {
@@ -27,69 +30,82 @@
     }
     
     body {
-      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
       background-color: var(--bg-primary);
       color: var(--text-primary);
       min-height: 100vh;
-      padding: 1rem;
+      padding: 1.5rem;
       line-height: 1.6;
+      font-size: 14px;
     }
     
     .container {
-      max-width: 800px;
+      max-width: 720px;
       margin: 0 auto;
     }
     
     header {
-      text-align: center;
-      padding: 1.5rem 0;
-      border-bottom: 1px solid var(--border);
+      text-align: left;
+      padding: 1rem 0 1.5rem 0;
       margin-bottom: 1.5rem;
-    }
-    
-    .ascii-yak {
-      color: var(--accent);
-      font-size: 0.6rem;
-      line-height: 1.1;
-      margin-bottom: 0.5rem;
-      opacity: 0.7;
+      border-bottom: 1px solid var(--border);
     }
     
     h1 {
-      font-size: 1.5rem;
-      font-weight: normal;
+      font-size: 1.25rem;
+      font-weight: 600;
       color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+    
+    h1::before {
+      content: '>';
+      margin-right: 0.5rem;
+      opacity: 0.5;
     }
     
     .tagline {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin-top: 0.25rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 0.35rem;
+      padding-left: 1.1rem;
     }
     
     .panel {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
-      padding: 1rem;
+      border-radius: 4px;
+      padding: 1.25rem;
       margin-bottom: 1rem;
     }
     
     .panel-header {
       color: var(--text-secondary);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.5rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
       border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .panel-header::before {
+      content: '#';
+      color: var(--accent);
+      opacity: 0.6;
     }
     
     .waveform-container {
       position: relative;
-      height: 80px;
+      height: 72px;
       background: var(--bg-tertiary);
       border: 1px solid var(--border);
+      border-radius: 3px;
       margin-bottom: 1rem;
+      overflow: hidden;
     }
     
     #waveform {
@@ -101,11 +117,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem;
+      padding: 0.6rem 0.75rem;
       background: var(--bg-tertiary);
       border: 1px solid var(--border);
+      border-radius: 3px;
       margin-bottom: 1rem;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
     
     .status {
@@ -115,24 +132,28 @@
     }
     
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      background: var(--text-secondary);
+      background: var(--text-muted);
+      box-shadow: 0 0 0 2px var(--bg-tertiary);
     }
     
     .status-dot.recording {
       background: var(--error);
+      box-shadow: 0 0 8px var(--error);
       animation: pulse 1s infinite;
     }
     
     .status-dot.processing {
       background: var(--warning);
+      box-shadow: 0 0 8px var(--warning);
       animation: pulse 0.5s infinite;
     }
     
     .status-dot.done {
       background: var(--success);
+      box-shadow: 0 0 8px var(--success);
     }
     
     .status-dot.error {
@@ -145,9 +166,10 @@
     }
     
     .timer {
-      font-family: 'Consolas', monospace;
-      font-size: 1rem;
+      font-family: 'SF Mono', 'Consolas', monospace;
+      font-size: 0.85rem;
       color: var(--accent);
+      font-variant-numeric: tabular-nums;
     }
     
     .controls {
@@ -158,11 +180,12 @@
     
     button {
       font-family: inherit;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       padding: 0.5rem 1rem;
       background: var(--bg-tertiary);
       color: var(--text-primary);
       border: 1px solid var(--border);
+      border-radius: 3px;
       cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -170,48 +193,54 @@
     button:hover:not(:disabled) {
       background: var(--accent-dim);
       border-color: var(--accent);
+      color: #fff;
     }
     
     button:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
+      outline: none;
+      box-shadow: 0 0 0 2px var(--accent-glow), 0 0 0 3px var(--accent);
     }
     
     button:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: not-allowed;
     }
     
     button.primary {
       background: var(--accent-dim);
       border-color: var(--accent);
+      color: #fff;
     }
     
     button.primary:hover:not(:disabled) {
       background: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
     }
     
     button.recording {
       background: var(--error);
       border-color: var(--error);
+      color: #fff;
     }
     
     .transcript-area {
       width: 100%;
-      min-height: 150px;
+      min-height: 140px;
       padding: 0.75rem;
       font-family: inherit;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       background: var(--bg-tertiary);
       color: var(--text-primary);
       border: 1px solid var(--border);
+      border-radius: 3px;
       resize: vertical;
       margin-bottom: 1rem;
     }
     
     .transcript-area:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: -2px;
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
     }
     
     .output-controls {
@@ -221,21 +250,24 @@
     }
     
     .message {
-      padding: 0.5rem;
+      padding: 0.6rem 0.75rem;
       margin-top: 1rem;
-      font-size: 0.85rem;
-      border-left: 3px solid var(--accent);
+      font-size: 0.8rem;
+      border-left: 2px solid var(--accent);
       background: var(--bg-tertiary);
+      border-radius: 0 3px 3px 0;
     }
     
     .message.error {
       border-left-color: var(--error);
       color: var(--error);
+      background: rgba(239, 68, 68, 0.08);
     }
     
     .message.success {
       border-left-color: var(--success);
       color: var(--success);
+      background: rgba(34, 197, 94, 0.08);
     }
     
     footer {
@@ -243,20 +275,47 @@
       padding: 1.5rem 0;
       margin-top: 2rem;
       border-top: 1px solid var(--border);
-      color: var(--text-secondary);
-      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-size: 0.7rem;
     }
     
     footer a {
       color: var(--accent);
       text-decoration: none;
+      transition: opacity 0.15s;
     }
     
     footer a:hover {
-      text-decoration: underline;
+      opacity: 0.8;
+    }
+    
+    ::selection {
+      background: var(--accent);
+      color: #fff;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-light);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
     }
     
     @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
       .controls, .output-controls {
         flex-direction: column;
       }
@@ -269,16 +328,8 @@
 <body>
   <div class="container">
     <header>
-      <pre class="ascii-yak">
-    /\  __  /\
-   /  \/  \/  \
-  |   (o)(o)   |
-   \    __    /
-    \  /__\  /
-     --------
-      </pre>
-      <h1>Yap // Quick Mic</h1>
-      <p class="tagline">yap fast / transcribe faster</p>
+      <h1>yap asr</h1>
+      <p class="tagline">local automatic speech recognition</p>
     </header>
     
     <main>
