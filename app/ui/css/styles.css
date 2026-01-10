@@ -3,20 +3,22 @@
  */
 
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-tertiary: #1a1a24;
-  --text-primary: #c8c8d0;
-  --text-secondary: #6a6a7a;
-  --text-muted: #4a4a5a;
-  --accent: #a855f7;
-  --accent-dim: #7c3aed;
-  --accent-glow: rgba(168, 85, 247, 0.15);
-  --border: #2a2a3a;
-  --border-light: #3a3a4a;
-  --success: #22c55e;
-  --error: #ef4444;
-  --warning: #f59e0b;
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f3460;
+  --text-primary: #e0e0ff;
+  --text-secondary: #b4a7d6;
+  --text-muted: #7b6fa6;
+  --accent: #ff2975;
+  --accent-dim: #e91e63;
+  --accent-glow: rgba(255, 41, 117, 0.25);
+  --accent-secondary: #00fff9;
+  --accent-purple: #b14aed;
+  --border: #ff297540;
+  --border-light: #ff297580;
+  --success: #39ff14;
+  --error: #ff3860;
+  --warning: #ffdd57;
 }
 
 * {
@@ -45,7 +47,8 @@ header {
   text-align: left;
   padding: 1rem 0 1.5rem 0;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: 0 1px 0 0 var(--accent-glow);
 }
 
 .header-row {
@@ -65,6 +68,7 @@ h1 {
   font-weight: 600;
   color: var(--accent);
   letter-spacing: -0.02em;
+  text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent-glow);
 }
 
 h1::before {
@@ -122,7 +126,7 @@ h1::before {
   color: var(--text-secondary);
   background: transparent;
   padding: 0.35rem 0.75rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -139,6 +143,8 @@ h1::before {
   color: var(--accent);
   border-color: var(--accent);
   background: var(--accent-glow);
+  box-shadow: 0 0 10px var(--accent-glow);
+  text-shadow: 0 0 8px var(--accent-glow);
 }
 
 .nav-tabs button.disabled {
@@ -163,10 +169,11 @@ h1::before {
 /* Panel */
 .panel {
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 4px;
   padding: 1.25rem;
   margin-bottom: 1rem;
+  box-shadow: 0 0 15px rgba(255, 41, 117, 0.1), inset 0 0 30px rgba(0, 0, 0, 0.3);
 }
 
 .panel-header {
@@ -176,7 +183,7 @@ h1::before {
   letter-spacing: 0.08em;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -185,7 +192,8 @@ h1::before {
 .panel-header::before {
   content: '#';
   color: var(--accent);
-  opacity: 0.6;
+  opacity: 0.8;
+  text-shadow: 0 0 5px var(--accent-glow);
 }
 
 /* Status Bar */
@@ -195,7 +203,7 @@ h1::before {
   align-items: center;
   padding: 0.6rem 0.75rem;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   margin-bottom: 1rem;
   font-size: 0.8rem;
@@ -261,7 +269,7 @@ button {
   padding: 0.5rem 1rem;
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -271,6 +279,7 @@ button:hover:not(:disabled) {
   background: var(--accent-dim);
   border-color: var(--accent);
   color: #fff;
+  box-shadow: 0 0 15px var(--accent-glow);
 }
 
 button:focus {
@@ -287,11 +296,12 @@ button.primary {
   background: var(--accent-dim);
   border-color: var(--accent);
   color: #fff;
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 button.primary:hover:not(:disabled) {
   background: var(--accent);
-  box-shadow: 0 0 16px var(--accent-glow);
+  box-shadow: 0 0 25px var(--accent-glow), 0 0 50px rgba(255, 41, 117, 0.2);
 }
 
 button.recording {
@@ -320,7 +330,7 @@ button.danger:hover:not(:disabled) {
   position: relative;
   height: 72px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   margin-bottom: 1rem;
   overflow: hidden;
@@ -342,7 +352,7 @@ button.danger:hover:not(:disabled) {
   align-items: center;
   margin-bottom: 0.5rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .clips-list-title {
@@ -358,7 +368,7 @@ button.danger:hover:not(:disabled) {
   justify-content: space-between;
   padding: 0.5rem 0.65rem;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   margin-bottom: 0.35rem;
   font-size: 0.8rem;
@@ -428,7 +438,7 @@ button.danger:hover:not(:disabled) {
 .formatting-settings {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
 }
 
 .formatting-row {
@@ -456,7 +466,7 @@ button.danger:hover:not(:disabled) {
   width: 36px;
   height: 20px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
@@ -490,7 +500,7 @@ button.danger:hover:not(:disabled) {
   font-size: 0.75rem;
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   cursor: pointer;
 }
@@ -509,7 +519,7 @@ button.danger:hover:not(:disabled) {
   font-size: 0.85rem;
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   resize: vertical;
   margin-bottom: 1rem;
@@ -549,7 +559,7 @@ label {
   font-size: 0.85rem;
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   resize: vertical;
 }
@@ -567,7 +577,7 @@ select {
   font-size: 0.8rem;
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   cursor: pointer;
 }
@@ -588,7 +598,7 @@ input[type="range"] {
   flex: 1;
   height: 4px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 2px;
   cursor: pointer;
   -webkit-appearance: none;
@@ -642,7 +652,7 @@ input[type="file"] {
 /* Audio player */
 .audio-container {
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -683,9 +693,9 @@ audio::-webkit-media-controls-panel {
 .addon-window {
   position: fixed;
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 4px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
   min-width: 280px;
   min-height: 180px;
   z-index: 1000;
@@ -699,7 +709,7 @@ audio::-webkit-media-controls-panel {
   align-items: center;
   padding: 0.5rem 0.75rem;
   background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
   cursor: move;
   user-select: none;
 }
@@ -764,9 +774,9 @@ audio::-webkit-media-controls-panel {
   right: 20px;
   width: 220px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 4px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 15px var(--accent-glow);
   z-index: 999;
 }
 
@@ -776,7 +786,7 @@ audio::-webkit-media-controls-panel {
   align-items: center;
   padding: 0.5rem 0.75rem;
   background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .addon-panel-title {
@@ -795,7 +805,7 @@ audio::-webkit-media-controls-panel {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   margin-bottom: 0.35rem;
   transition: all 0.15s;
@@ -854,7 +864,7 @@ audio::-webkit-media-controls-panel {
   right: 0;
   bottom: 0;
   background-color: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   transition: 0.2s;
 }
@@ -890,7 +900,7 @@ audio::-webkit-media-controls-panel {
   font-size: 0.8rem;
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   resize: vertical;
   margin-bottom: 0.5rem;
@@ -903,7 +913,7 @@ audio::-webkit-media-controls-panel {
 
 .ollama-addon .output {
   background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
   padding: 0.5rem;
   margin-top: 0.5rem;
@@ -938,7 +948,7 @@ footer {
   text-align: center;
   padding: 1.5rem 0;
   margin-top: 2rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
   color: var(--text-muted);
   font-size: 0.7rem;
 }
@@ -1034,7 +1044,7 @@ footer a:hover {
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .settings-row {
@@ -1056,7 +1066,7 @@ footer a:hover {
   font-size: 0.8rem;
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 3px;
 }
 
@@ -1096,7 +1106,7 @@ footer a:hover {
   gap: 0.5rem;
   margin-top: 1rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
 }
 
 .settings-message {
