@@ -7,6 +7,17 @@ let windowZIndex = 1001;
 let windowCascadeOffset = 0;
 const CASCADE_STEP = 24;
 
+// HTML escape function to prevent XSS
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Configuration system - localStorage backed with defaults
 const CONFIG_NAMESPACE = 'yap.config';
 const APPS_NAMESPACE = 'yap.apps';
@@ -1035,7 +1046,7 @@ function renderSendWebhook(container, ctx) {
         <div class="webhook-destination-row">
           <select id="webhookProfileSelect" class="webhook-select">
             ${profiles.length === 0 ? '<option value="">No destinations configured</option>' : ''}
-            ${profiles.map(p => `<option value="${p.id}" ${p.id === selectedProfileId ? 'selected' : ''}>${p.name}</option>`).join('')}
+            ${profiles.map(p => `<option value="${escapeHtml(p.id)}" ${p.id === selectedProfileId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}
           </select>
           <button class="small" id="webhookEditBtn" ${profiles.length === 0 ? 'disabled' : ''}>Edit</button>
           <button class="small" id="webhookNewBtn">New</button>
@@ -1121,12 +1132,12 @@ function renderSendWebhook(container, ctx) {
 
       <div class="webhook-section">
         <label for="webhookName">Name</label>
-        <input type="text" id="webhookName" value="${profile.name}" placeholder="My Webhook">
+        <input type="text" id="webhookName" value="${escapeHtml(profile.name)}" placeholder="My Webhook">
       </div>
 
       <div class="webhook-section">
         <label for="webhookUrl">URL</label>
-        <input type="url" id="webhookUrl" value="${profile.url}" placeholder="https://...">
+        <input type="url" id="webhookUrl" value="${escapeHtml(profile.url)}" placeholder="https://...">
       </div>
 
       <div class="webhook-section">
@@ -1140,7 +1151,7 @@ function renderSendWebhook(container, ctx) {
 
       <div class="webhook-section">
         <label for="webhookHeaders">Headers (JSON)</label>
-        <textarea id="webhookHeaders" rows="2" placeholder='{"Content-Type": "application/json"}'>${profile.headers || ''}</textarea>
+        <textarea id="webhookHeaders" rows="2" placeholder='{"Content-Type": "application/json"}'>${escapeHtml(profile.headers || '')}</textarea>
         <div class="settings-hint">⚠️ Headers may contain auth tokens. Store securely.</div>
       </div>
 
@@ -1240,8 +1251,8 @@ function renderSendWebhook(container, ctx) {
     }
 
     if (dryRun) {
-      // Show preview
-      outputDiv.innerHTML = `<strong>Dry Run Preview:</strong>\n<pre>${JSON.stringify(payload, null, 2)}</pre>\n<strong>URL:</strong> ${profile.url}\n<strong>Method:</strong> ${profile.method}`;
+      // Show preview - escape user data to prevent XSS
+      outputDiv.innerHTML = `<strong>Dry Run Preview:</strong>\n<pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>\n<strong>URL:</strong> ${escapeHtml(profile.url)}\n<strong>Method:</strong> ${escapeHtml(profile.method)}`;
       outputDiv.style.display = 'block';
       errorDiv.style.display = 'none';
       return;
@@ -1271,7 +1282,7 @@ function renderSendWebhook(container, ctx) {
       const snippet = responseText.substring(0, 200);
 
       if (response.ok) {
-        outputDiv.innerHTML = `<strong>✓ Success (${response.status})</strong>\n${snippet}${responseText.length > 200 ? '...' : ''}`;
+        outputDiv.innerHTML = `<strong>✓ Success (${escapeHtml(response.status)})</strong>\n${escapeHtml(snippet)}${responseText.length > 200 ? '...' : ''}`;
         outputDiv.style.display = 'block';
         ctx.showMessage?.('Webhook sent successfully', 'success');
       } else {
