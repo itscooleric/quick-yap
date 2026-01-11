@@ -35,16 +35,22 @@ SFTP_BASE_PATH = os.getenv("SFTP_BASE_PATH", "/uploads")
 EXPORT_DEFAULT_REPO = os.getenv("EXPORT_DEFAULT_REPO", "")
 EXPORT_DEFAULT_BRANCH = os.getenv("EXPORT_DEFAULT_BRANCH", "main")
 
+# CORS configuration from environment
+# Default allows localhost only for security
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:*,https://localhost:*").split(",")
+
 app = FastAPI(
     title="YAP Exporter",
     description="Export transcripts to GitLab, GitHub, or SFTP",
     version="1.0.0"
 )
 
-# CORS for local development
+# CORS - defaults to localhost only
+# Set CORS_ORIGINS env var to allow specific domains in production
+# WARNING: Using "*" allows all origins and is a security risk
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict to your domain
+    allow_origins=CORS_ORIGINS if CORS_ORIGINS != ["*"] else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -343,7 +349,21 @@ async def export_sftp_upload(request: SFTPUploadRequest):
         transport = paramiko.Transport((SFTP_HOST, SFTP_PORT))
         
         if SFTP_KEY_PATH and os.path.exists(SFTP_KEY_PATH):
-            pkey = paramiko.RSAKey.from_private_key_file(SFTP_KEY_PATH)
+            # Try to load key automatically detecting type
+            pkey = None
+            for key_class in [paramiko.RSAKey, paramiko.Ed25519Key, paramiko.ECDSAKey, paramiko.DSSKey]:
+                try:
+                    pkey = key_class.from_private_key_file(SFTP_KEY_PATH)
+                    break
+                except paramiko.SSHException:
+                    continue
+            
+            if pkey is None:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Could not load SSH key - unsupported key format"
+                )
+            
             transport.connect(username=SFTP_USER, pkey=pkey)
         else:
             transport.connect(username=SFTP_USER, password=SFTP_PASSWORD)

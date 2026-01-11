@@ -96,7 +96,9 @@ function renderMarkdown(text) {
   html = html.replace(/(<li>.*<\/li>\n?)+/gs, '<ul>$&</ul>');
   
   // Ordered lists
-  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/^\d+\. (.+)$/gm, '<li class="ol-item">$1</li>');
+  html = html.replace(/(<li class="ol-item">.*<\/li>\n?)+/gs, '<ol>$&</ol>');
+  html = html.replace(/class="ol-item"/g, '');
   
   // Paragraphs - wrap text blocks
   // Split by double newlines
@@ -135,7 +137,21 @@ function splitIntoChunks(text) {
       finalChunks.push(chunk);
     } else {
       // Split long chunk by sentences or at character limit
-      const sentences = chunk.match(/[^.!?]+[.!?]+/g) || [chunk];
+      // Match sentences including trailing punctuation, or remaining text
+      const sentencePattern = /[^.!?]+[.!?]+\s*/g;
+      const sentences = chunk.match(sentencePattern) || [];
+      
+      // Check if there's remaining text after the last sentence
+      const matchedLength = sentences.reduce((acc, s) => acc + s.length, 0);
+      if (matchedLength < chunk.length) {
+        sentences.push(chunk.substring(matchedLength));
+      }
+      
+      if (sentences.length === 0) {
+        // No sentence boundaries, use the whole chunk
+        sentences.push(chunk);
+      }
+      
       let current = '';
       for (const sentence of sentences) {
         if ((current + sentence).length <= ttsSettings.maxCharsPerChunk) {
