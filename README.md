@@ -54,18 +54,29 @@ This is achieved via Caddy labels (production) or nginx proxy (local mode).
 - Text input or file upload (supports .txt and .md)
 - Multiple voice selection with preference persistence
 - Adjustable speaking rate
-- **Markdown preview** with toggle
-- **Read-along mode** with paragraph highlighting
+- **Markdown preview** with prominent Plain/Markdown toggle
+- **Read-along mode** with dedicated panel and paragraph highlighting
 - Audio playback with Media Session API support
 - Download generated audio
 - Keyboard shortcut: Ctrl+Enter to synthesize
 
-### Export (NEW)
+### Export
 - Export transcripts to GitLab or GitHub repositories (commit files)
 - Upload transcripts via SFTP
+- **Generic webhooks** - POST to any HTTP endpoint (n8n, Zapier, etc.)
+- **GitLab via Webhook** - Commit via proxy server (recommended, avoids CORS)
+- **GitLab Direct** - Direct API calls with CORS detection
 - Save export profiles for quick access
-- Optional AI-generated commit messages (via Ollama)
-- See [Export Configuration](#export-configuration) for setup
+- See [Export Documentation](docs/EXPORT.md) for setup
+
+### Data Tab (Metrics)
+- **Local-only metrics** - track ASR and TTS usage
+- Summary cards showing minutes recorded, transcribed, and TTS generated
+- Event history table with filtering and pagination
+- Export history as JSON
+- Clear history functionality
+- **Enabled by default** - set `METRICS_ENABLED=false` to disable
+- Data never leaves the server
 
 ### Apps (Optional)
 > **Note**: The Apps ecosystem is disabled by default. Enable it by setting `enableApps: true` in `app/ui/config.js`.
@@ -73,18 +84,26 @@ This is achieved via Caddy labels (production) or nginx proxy (local mode).
 When enabled:
 - Non-modal draggable/resizable app windows
 - **Built-in Apps**:
-  - **Ollama Summarize**: Summarize transcripts using local LLM
   - **Send (Webhook)**: Send transcript or conversation data to webhooks
 - **External Apps**: Load additional apps from a manifest URL
 - See [Apps Documentation](add-ons/README.md) for details
 
 ## Screenshots
 
-*(See `/docs/images/` for screenshot placeholders)*
+### TTS View with Markdown Toggle
+The TTS tab features a prominent Plain/Markdown toggle for easy switching between text and rendered markdown views.
 
-| ASR | TTS |
-|-----|-----|
-| ![ASR Screenshot](docs/images/asr-recording.png) | ![TTS Screenshot](docs/images/tts-idle.png) |
+![TTS View](https://github.com/user-attachments/assets/8b7a001b-75ce-439d-91b1-9c045d387d40)
+
+### Settings Panel
+The Settings panel provides access to all ASR behavior and formatting options.
+
+![Settings Panel](https://github.com/user-attachments/assets/c04302bd-97a3-4363-9f57-e1cbcd433ed8)
+
+### Read-Along Mode
+The TTS Read-Along feature opens a dedicated panel that highlights paragraphs as they play.
+
+![TTS Read-Along](https://github.com/user-attachments/assets/6d4d4cf4-1e0d-4759-ae83-0552d3fff4f3)
 
 ## Quick Start
 
@@ -401,6 +420,9 @@ pip install -r tests/requirements.txt
 
 # Run TTS tests (requires TTS service running)
 pytest tests/test_tts.py -v
+
+# Run unit tests (no services needed)
+pytest tests/test_export.py tests/test_settings.py tests/test_read_along.py -v
 ```
 
 See [tests/README.md](tests/README.md) for more details on running tests.
@@ -424,18 +446,30 @@ When making changes, verify the following features work:
 
 **TTS Tab**
 - [ ] Enter text → synthesize button enables
-- [ ] Markdown toggle → shows/hides preview
-- [ ] Read-along toggle → chunks are highlighted during playback
+- [ ] Plain/Markdown toggle → switches between views
 - [ ] Synthesize → audio plays
+- [ ] Play with Read-Along → opens panel, highlights paragraphs
+- [ ] Read-along panel → Pause/Stop/Close buttons work
 - [ ] Download → downloads audio file
 - [ ] Ctrl+Enter → triggers synthesize
 
-**Export (requires exporter service)**
-- [ ] Export panel opens
-- [ ] Connection test works
-- [ ] GitLab commit works
-- [ ] GitHub commit works
-- [ ] SFTP upload works
+**Export**
+- [ ] Export panel opens from ASR tab
+- [ ] New webhook target → can be created and saved
+- [ ] GitLab via webhook → works with proxy
+- [ ] Preview payload → shows correct JSON
+- [ ] Send → exports successfully
+- [ ] GitLab commit (requires exporter service) → works
+- [ ] GitHub commit (requires exporter service) → works
+
+**Data Tab (Metrics)**
+- [ ] Data tab visible when metrics enabled
+- [ ] Record/transcribe → events appear in Data tab
+- [ ] TTS synthesize → events appear in Data tab
+- [ ] Summary cards → show correct totals
+- [ ] History table → shows events with pagination
+- [ ] Clear history → removes all events
+- [ ] Export JSON → downloads history file
 
 **Apps (when enabled)**
 - [ ] Apps button visible when enableApps=true
