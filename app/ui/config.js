@@ -3,6 +3,13 @@
 // For local development, you can modify these values.
 
 window.__YAP_CONFIG = {
+  // === Feature Flags ===
+  
+  // Enable/disable Apps ecosystem (default: false)
+  // When false, the Apps button is hidden and built-in apps are not shown.
+  // Set to true to enable the Apps panel and built-in apps (Ollama Summarize, Send/Webhook).
+  enableApps: false,
+  
   // === YAP Apps Configuration ===
   
   // External apps manifest URL (optional)

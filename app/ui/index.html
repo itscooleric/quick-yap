@@ -22,7 +22,7 @@
           <button data-tab="asr" class="active">ASR</button>
           <button data-tab="tts">TTS</button>
           <button id="addonsBtn">Apps</button>
-          <button id="settingsBtn" class="settings-btn" title="Settings">*</button>
+          <button id="settingsBtn" class="settings-btn" title="Settings">Settings</button>
         </nav>
       </div>
       <p class="tagline">local speech tools</p>
@@ -51,7 +51,7 @@
             <button id="stopBtn" disabled>Stop</button>
             <button id="transcribeAllBtn" disabled>Transcribe All</button>
             <button id="clearBtn" disabled>Clear</button>
-            <button id="asrUploadBtn" type="button">Choose audio file</button>
+            <button id="asrUploadBtn" type="button">Upload</button>
           </div>
 
           <div class="form-group" style="margin-top: 0.5rem;">
@@ -75,11 +75,9 @@
           <textarea id="transcript" class="transcript-area" placeholder="Transcript will appear here..." readonly></textarea>
 
           <div class="output-controls">
-            <button id="copyBtn" disabled title="Copy using default mode">Copy</button>
-            <button id="copyCleanBtn" disabled title="Copy without separators">Copy Clean</button>
-            <button id="copySeparatorsBtn" disabled title="Copy with clip separators">Copy with Separators</button>
+            <button id="copyBtn" disabled title="Copy transcript">Copy</button>
             <button id="downloadTxtBtn" disabled>Download .txt</button>
-            <button id="asrSettingsBtn" class="small">Settings</button>
+            <button id="exportBtn" disabled title="Export to GitLab/GitHub/SFTP">Export</button>
           </div>
 
           <div id="asrMessage" class="message" style="display: none;"></div>
@@ -92,8 +90,17 @@
           <div class="panel-header">Text Input</div>
 
           <div class="form-group">
-            <label for="ttsTextInput">Text to synthesize:</label>
+            <div class="tts-input-header">
+              <label for="ttsTextInput">Text to synthesize:</label>
+              <div class="tts-preview-toggle">
+                <label class="toggle-label-inline">
+                  <input type="checkbox" id="ttsMarkdownToggle">
+                  <span>Markdown preview</span>
+                </label>
+              </div>
+            </div>
             <textarea id="ttsTextInput" class="text-input" placeholder="Enter text to convert to speech..."></textarea>
+            <div id="ttsMarkdownPreview" class="markdown-preview" style="display: none;"></div>
             <div class="char-count"><span id="charCount">0</span> characters</div>
           </div>
 
@@ -102,7 +109,7 @@
             <div class="file-input-wrapper">
               <button id="ttsUploadBtn" type="button">Choose .txt file</button>
               <span id="ttsFileName" style="color: var(--text-secondary); font-size: 0.85rem;">No file selected</span>
-              <input type="file" id="ttsFileInput" accept=".txt,text/plain">
+              <input type="file" id="ttsFileInput" accept=".txt,text/plain,.md">
             </div>
           </div>
         </div>
@@ -127,6 +134,16 @@
             </div>
             <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
               (length_scale: lower = faster, higher = slower)
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="toggle-container">
+              <input type="checkbox" id="ttsReadAlongToggle">
+              <label for="ttsReadAlongToggle" style="margin: 0; text-transform: none; font-size: 0.85rem; color: var(--text-primary);">Read-along mode</label>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">
+              Highlight paragraphs as they play
             </div>
           </div>
         </div>

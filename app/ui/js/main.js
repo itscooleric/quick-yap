@@ -3,7 +3,7 @@
 
 import { asr } from './asr.js';
 import { tts } from './tts.js';
-import { initAddonPanel, initSettingsPanel } from './addons.js';
+import { initAddonPanel } from './addons.js';
 
 // App state
 let activeTab = 'asr';
@@ -150,7 +150,21 @@ function init() {
   
   // Initialize addon panel and settings
   initAddonPanel();
-  initSettingsPanel();
+  
+  // Setup global Settings button - context-sensitive
+  const settingsBtn = document.getElementById('settingsBtn');
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      // Open ASR settings when on ASR tab
+      if (activeTab === 'asr') {
+        asr.openSettingsPanel();
+      } else if (activeTab === 'tts') {
+        // TTS settings could be added here in the future
+        // For now, open ASR settings as fallback
+        asr.openSettingsPanel();
+      }
+    });
+  }
   
   // Setup tab navigation (in-page, no page reload)
   document.querySelectorAll('.nav-tabs button[data-tab]').forEach(btn => {
