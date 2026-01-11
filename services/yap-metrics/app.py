@@ -16,7 +16,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 # Configuration from environment
-METRICS_ENABLED = os.getenv("METRICS_ENABLED", "false").lower() == "true"
+# METRICS_ENABLED defaults to true so users can see the feature immediately
+METRICS_ENABLED = os.getenv("METRICS_ENABLED", "true").lower() == "true"
 METRICS_STORE_TEXT = os.getenv("METRICS_STORE_TEXT", "false").lower() == "true"
 METRICS_RETENTION_DAYS = int(os.getenv("METRICS_RETENTION_DAYS", "30"))
 METRICS_MAX_EVENTS = int(os.getenv("METRICS_MAX_EVENTS", "5000"))

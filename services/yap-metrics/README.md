@@ -14,7 +14,7 @@ Local-only metrics and history storage for YAP. All data is stored on the server
 
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
-| `METRICS_ENABLED` | `false` | Enable/disable metrics collection |
+| `METRICS_ENABLED` | `true` | Enable/disable metrics collection |
 | `METRICS_STORE_TEXT` | `false` | Store text content (transcripts, TTS input) |
 | `METRICS_RETENTION_DAYS` | `30` | Days to retain events |
 | `METRICS_MAX_EVENTS` | `5000` | Maximum events to keep |
@@ -100,7 +100,7 @@ services:
 
 ## Privacy
 
-- **Metrics are disabled by default** - opt-in only
+- **Metrics are enabled by default** - set `METRICS_ENABLED=false` to disable
 - **Text storage is disabled by default** - separate opt-in
 - **Data never leaves the server** - no external API calls
 - **Clearable from UI** - user has full control
