@@ -226,10 +226,6 @@ function updateViewToggleButtons() {
   if (elements.viewMarkdownBtn) {
     elements.viewMarkdownBtn.classList.toggle('active', markdownPreviewEnabled);
   }
-  // Keep hidden checkbox in sync for compatibility
-  if (elements.markdownToggle) {
-    elements.markdownToggle.checked = markdownPreviewEnabled;
-  }
 }
 
 // Highlight current chunk in read-along
@@ -558,7 +554,6 @@ export function init(container) {
     statusDot: container.querySelector('#ttsStatusDot'),
     statusText: container.querySelector('#ttsStatusText'),
     message: container.querySelector('#ttsMessage'),
-    markdownToggle: container.querySelector('#ttsMarkdownToggle'),
     markdownPreview: container.querySelector('#ttsMarkdownPreview'),
     readAlongToggle: container.querySelector('#ttsReadAlongToggle'),
     viewPlainBtn: container.querySelector('#ttsViewPlain'),
@@ -568,10 +563,7 @@ export function init(container) {
   // Load voices
   loadVoices();
 
-  // Initialize toggles from settings
-  if (elements.markdownToggle) {
-    elements.markdownToggle.checked = markdownPreviewEnabled;
-  }
+  // Initialize read-along toggle from settings
   if (elements.readAlongToggle) {
     elements.readAlongToggle.checked = readAlongEnabled;
   }
@@ -607,15 +599,6 @@ export function init(container) {
   elements.viewMarkdownBtn?.addEventListener('click', () => {
     markdownPreviewEnabled = true;
     ttsSettings.markdownPreview = true;
-    saveSettings();
-    updateViewToggleButtons();
-    updateMarkdownPreview();
-  });
-
-  // Markdown preview toggle (legacy, hidden but kept for compatibility)
-  elements.markdownToggle?.addEventListener('change', () => {
-    markdownPreviewEnabled = elements.markdownToggle.checked;
-    ttsSettings.markdownPreview = markdownPreviewEnabled;
     saveSettings();
     updateViewToggleButtons();
     updateMarkdownPreview();

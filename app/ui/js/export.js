@@ -120,6 +120,19 @@ function buildPayload(transcript, clips, payloadMode = 'transcript_only') {
   };
 }
 
+// Detect CORS errors from fetch responses
+function detectCORSError(response, error) {
+  // Response status 0 typically indicates CORS blocking
+  if (response && response.status === 0) {
+    return true;
+  }
+  // TypeError with 'Failed to fetch' is another CORS indicator
+  if (error && error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+    return true;
+  }
+  return false;
+}
+
 // Execute webhook export (direct HTTP)
 async function executeWebhookExport(profile, transcript, clips) {
   const payload = buildPayload(transcript, clips, profile.payloadMode || 'transcript_only');
@@ -133,26 +146,32 @@ async function executeWebhookExport(profile, transcript, clips) {
     }
   }
   
-  const response = await fetch(profile.url, {
-    method: profile.method || 'POST',
-    headers,
-    body: JSON.stringify(payload)
-  });
-  
-  const responseText = await response.text().catch(() => '');
-  
-  if (!response.ok) {
-    // Check for CORS error indicators
-    if (response.status === 0 || responseText === '') {
+  try {
+    const response = await fetch(profile.url, {
+      method: profile.method || 'POST',
+      headers,
+      body: JSON.stringify(payload)
+    });
+    
+    const responseText = await response.text().catch(() => '');
+    
+    if (!response.ok) {
+      if (detectCORSError(response, null)) {
+        throw new Error('Request failed - this may be a CORS issue. Consider using a webhook proxy.');
+      }
+      throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 200)}`);
+    }
+    
+    return {
+      status: response.status,
+      response: responseText.substring(0, 500)
+    };
+  } catch (err) {
+    if (detectCORSError(null, err)) {
       throw new Error('Request failed - this may be a CORS issue. Consider using a webhook proxy.');
     }
-    throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 200)}`);
+    throw err;
   }
-  
-  return {
-    status: response.status,
-    response: responseText.substring(0, 500)
-  };
 }
 
 // Execute GitLab commit via direct API
@@ -200,8 +219,7 @@ async function executeGitLabDirectCommit(profile, transcript, clips) {
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
       
-      // Check for CORS error
-      if (response.status === 0) {
+      if (detectCORSError(response, null)) {
         throw new Error('CORS blocked. GitLab API requires server-side access. Use webhook/proxy mode instead.');
       }
       
@@ -216,8 +234,7 @@ async function executeGitLabDirectCommit(profile, transcript, clips) {
     };
     
   } catch (err) {
-    // Detect CORS errors
-    if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+    if (detectCORSError(null, err)) {
       throw new Error('Request failed - likely CORS blocked. GitLab API requires server-side access. Use webhook/proxy mode instead.');
     }
     throw err;
@@ -318,7 +335,6 @@ async function executeExporterServiceExport(profile, transcript, clips) {
         file_path: profile.filePath,
         branch: profile.branch || 'main',
         commit_message: profile.commitMessage || null,
-        generate_message: false,
         payload
       };
   

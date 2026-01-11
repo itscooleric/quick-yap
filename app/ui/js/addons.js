@@ -123,8 +123,8 @@ export function validateUrl(url, requireLocalhost = true) {
   return { valid: true };
 }
 
-// Built-in apps registry - each app can declare a settingsSchema
-// Note: Ollama Summarize has been removed per user request (risky free-text model name, summarize not desired)
+// Built-in apps registry
+// Note: Ollama integration removed
 const builtInApps = [];
 
 // External apps loaded from manifest
@@ -635,8 +635,6 @@ function renderSettingsPanel(container, ctx) {
     }, 2000);
   });
 }
-
-// Note: Ollama Summarize has been removed per user request
 
 // ============================================
 // External Apps Loading (Manifest-based)
