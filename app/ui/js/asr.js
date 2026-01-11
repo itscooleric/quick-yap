@@ -21,10 +21,16 @@ let clips = [];
 // Transcript settings (persisted)
 let transcriptSettings = {
   showSeparators: false,
-  copyModeDefault: 'clean', // 'clean' or 'separators'
+  collapseBlankLines: true,
+  trimWhitespace: true,
   betweenClips: 'blank', // 'single' or 'blank'
   cleanLineBreaks: false,
-  lineBreakMode: 'paragraphs' // 'paragraphs' or 'single'
+  lineBreakMode: 'paragraphs', // 'paragraphs' or 'single'
+  // QoL settings
+  autoTranscribe: false,
+  autoCopy: false,
+  confirmClear: true,
+  confirmDeleteClip: true
 };
 
 // DOM elements (set in init)
@@ -37,20 +43,51 @@ const BAR_COUNT = 48;
 function loadSettings() {
   transcriptSettings = {
     showSeparators: util.storage.get('settings.transcript.showSeparators', false),
-    copyModeDefault: util.storage.get('settings.transcript.copyModeDefault', 'clean'),
+    collapseBlankLines: util.storage.get('settings.transcript.collapseBlankLines', true),
+    trimWhitespace: util.storage.get('settings.transcript.trimWhitespace', true),
     betweenClips: util.storage.get('settings.transcript.betweenClips', 'blank'),
     cleanLineBreaks: util.storage.get('settings.transcript.cleanLineBreaks', false),
-    lineBreakMode: util.storage.get('settings.transcript.lineBreakMode', 'paragraphs')
+    lineBreakMode: util.storage.get('settings.transcript.lineBreakMode', 'paragraphs'),
+    // QoL settings
+    autoTranscribe: util.storage.get('settings.asr.autoTranscribe', false),
+    autoCopy: util.storage.get('settings.asr.autoCopy', false),
+    confirmClear: util.storage.get('settings.asr.confirmClear', true),
+    confirmDeleteClip: util.storage.get('settings.asr.confirmDeleteClip', true)
   };
 }
 
 // Save settings to localStorage
 function saveSettings() {
   util.storage.set('settings.transcript.showSeparators', transcriptSettings.showSeparators);
-  util.storage.set('settings.transcript.copyModeDefault', transcriptSettings.copyModeDefault);
+  util.storage.set('settings.transcript.collapseBlankLines', transcriptSettings.collapseBlankLines);
+  util.storage.set('settings.transcript.trimWhitespace', transcriptSettings.trimWhitespace);
   util.storage.set('settings.transcript.betweenClips', transcriptSettings.betweenClips);
   util.storage.set('settings.transcript.cleanLineBreaks', transcriptSettings.cleanLineBreaks);
   util.storage.set('settings.transcript.lineBreakMode', transcriptSettings.lineBreakMode);
+  util.storage.set('settings.asr.autoTranscribe', transcriptSettings.autoTranscribe);
+  util.storage.set('settings.asr.autoCopy', transcriptSettings.autoCopy);
+  util.storage.set('settings.asr.confirmClear', transcriptSettings.confirmClear);
+  util.storage.set('settings.asr.confirmDeleteClip', transcriptSettings.confirmDeleteClip);
+}
+
+// Format transcript text for display/copy based on settings
+function formatTranscript(text) {
+  let result = text;
+  
+  // Trim leading/trailing whitespace
+  if (transcriptSettings.trimWhitespace) {
+    result = result.trim();
+  }
+  
+  // Collapse multiple blank lines
+  if (transcriptSettings.collapseBlankLines) {
+    result = result.replace(/\n{3,}/g, '\n\n');
+  }
+  
+  // Apply line break cleanup
+  result = util.cleanupText(result, transcriptSettings.cleanLineBreaks, transcriptSettings.lineBreakMode);
+  
+  return result;
 }
 
 // Get combined transcript text based on settings
@@ -63,7 +100,7 @@ function getCombinedTranscript(withSeparators = null) {
   
   const parts = transcribedClips.map((clip, index) => {
     let text = clip.transcript;
-    text = util.cleanupText(text, transcriptSettings.cleanLineBreaks, transcriptSettings.lineBreakMode);
+    text = formatTranscript(text);
     
     if (useSeparators) {
       return `--- Clip ${index + 1} ---\n${text}`;
@@ -78,7 +115,7 @@ function getCombinedTranscript(withSeparators = null) {
 function getClipTranscript(clipId) {
   const clip = clips.find(c => c.id === clipId);
   if (!clip || !clip.transcript) return '';
-  return util.cleanupText(clip.transcript, transcriptSettings.cleanLineBreaks, transcriptSettings.lineBreakMode);
+  return formatTranscript(clip.transcript);
 }
 
 // Update transcript display
@@ -426,7 +463,7 @@ async function startRecording() {
       const blob = new Blob(audioChunks, { type: actualMimeType });
       const durationMs = startTime ? Date.now() - startTime : 0;
 
-      addClip(blob, actualMimeType, durationMs);
+      const newClip = addClip(blob, actualMimeType, durationMs);
 
       stopTimer();
       if (animationId) {
@@ -447,6 +484,20 @@ async function startRecording() {
       }
 
       setStatus('done', 'Clip saved');
+      
+      // Auto-transcribe if enabled
+      if (transcriptSettings.autoTranscribe && newClip) {
+        setTimeout(() => {
+          transcribeSingle(newClip.id).then(() => {
+            // Auto-copy after transcription if enabled
+            if (transcriptSettings.autoCopy) {
+              copyTranscript().then(() => {
+                showMessage('Transcribed and copied', 'success');
+              });
+            }
+          });
+        }, 100);
+      }
     };
 
     mediaRecorder.start();
@@ -575,15 +626,15 @@ function downloadClip(clipId) {
 }
 
 function downloadTranscript() {
-  const text = getCombinedTranscript(transcriptSettings.copyModeDefault === 'separators');
+  const text = getCombinedTranscript();
   if (!text) return;
   util.downloadText(text, `transcript-${Date.now()}.txt`);
 }
 
 // Copy functions
-async function copyTranscript(withSeparators = null) {
-  const useSeparators = withSeparators !== null ? withSeparators : (transcriptSettings.copyModeDefault === 'separators');
-  const text = getCombinedTranscript(useSeparators);
+async function copyTranscript() {
+  // Copy exactly what is displayed in the transcript area
+  const text = getCombinedTranscript();
   if (!text) return;
   
   const success = await util.copyToClipboard(text);
@@ -612,22 +663,61 @@ function showMessage(text, type = '') {
 
 // Settings panel
 function openSettingsPanel() {
-  createAddonWindow('Transcript Settings', (container) => {
+  createAddonWindow('ASR Settings', (container) => {
     container.innerHTML = `
+      <div class="settings-section-title">Behavior</div>
+      
       <div class="form-group" style="margin-bottom: 1rem;">
-        <label style="margin-bottom: 0.5rem;">Display separators in transcript</label>
         <div class="toggle-container">
-          <div class="toggle-switch ${transcriptSettings.showSeparators ? 'active' : ''}" id="settingShowSeparators"></div>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Show "--- Clip N ---"</span>
+          <div class="toggle-switch ${transcriptSettings.autoTranscribe ? 'active' : ''}" id="settingAutoTranscribe"></div>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Auto-transcribe when recording stops</span>
         </div>
       </div>
       
       <div class="form-group" style="margin-bottom: 1rem;">
-        <label style="margin-bottom: 0.5rem;">Default copy mode</label>
-        <select id="settingCopyMode" class="formatting-select" style="width: 100%;">
-          <option value="clean" ${transcriptSettings.copyModeDefault === 'clean' ? 'selected' : ''}>Clean (no separators)</option>
-          <option value="separators" ${transcriptSettings.copyModeDefault === 'separators' ? 'selected' : ''}>With separators</option>
-        </select>
+        <div class="toggle-container">
+          <div class="toggle-switch ${transcriptSettings.autoCopy ? 'active' : ''}" id="settingAutoCopy"></div>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Auto-copy after transcription</span>
+        </div>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <div class="toggle-container">
+          <div class="toggle-switch ${transcriptSettings.confirmClear ? 'active' : ''}" id="settingConfirmClear"></div>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Confirm before clearing</span>
+        </div>
+        <span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 2.8rem;">Shift+Click always bypasses</span>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <div class="toggle-container">
+          <div class="toggle-switch ${transcriptSettings.confirmDeleteClip ? 'active' : ''}" id="settingConfirmDeleteClip"></div>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Confirm before deleting clip</span>
+        </div>
+      </div>
+      
+      <div class="settings-section-title" style="margin-top: 1.5rem;">Formatting</div>
+      
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <div class="toggle-container">
+          <div class="toggle-switch ${transcriptSettings.showSeparators ? 'active' : ''}" id="settingShowSeparators"></div>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Show clip separators</span>
+        </div>
+        <span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 2.8rem;">Display "--- Clip N ---"</span>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <div class="toggle-container">
+          <div class="toggle-switch ${transcriptSettings.collapseBlankLines ? 'active' : ''}" id="settingCollapseBlankLines"></div>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Collapse multiple blank lines</span>
+        </div>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <div class="toggle-container">
+          <div class="toggle-switch ${transcriptSettings.trimWhitespace ? 'active' : ''}" id="settingTrimWhitespace"></div>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Trim leading/trailing whitespace</span>
+        </div>
       </div>
       
       <div class="form-group" style="margin-bottom: 1rem;">
@@ -639,10 +729,9 @@ function openSettingsPanel() {
       </div>
       
       <div class="form-group" style="margin-bottom: 1rem;">
-        <label style="margin-bottom: 0.5rem;">Clean line breaks</label>
         <div class="toggle-container">
           <div class="toggle-switch ${transcriptSettings.cleanLineBreaks ? 'active' : ''}" id="settingCleanLineBreaks"></div>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Normalize whitespace</span>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Normalize whitespace</span>
         </div>
       </div>
       
@@ -653,9 +742,41 @@ function openSettingsPanel() {
           <option value="single" ${transcriptSettings.lineBreakMode === 'single' ? 'selected' : ''}>Single line</option>
         </select>
       </div>
+      
+      <div class="settings-section-title" style="margin-top: 1.5rem;">Keyboard Shortcuts</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">
+        <p><strong>Space</strong> – Start/Stop recording</p>
+        <p><strong>Ctrl+Enter</strong> – Transcribe all</p>
+        <p><strong>Ctrl+Shift+C</strong> – Copy transcript</p>
+      </div>
     `;
     
-    // Event handlers
+    // Event handlers - Behavior
+    container.querySelector('#settingAutoTranscribe').addEventListener('click', function() {
+      transcriptSettings.autoTranscribe = !transcriptSettings.autoTranscribe;
+      this.classList.toggle('active', transcriptSettings.autoTranscribe);
+      saveSettings();
+    });
+    
+    container.querySelector('#settingAutoCopy').addEventListener('click', function() {
+      transcriptSettings.autoCopy = !transcriptSettings.autoCopy;
+      this.classList.toggle('active', transcriptSettings.autoCopy);
+      saveSettings();
+    });
+    
+    container.querySelector('#settingConfirmClear').addEventListener('click', function() {
+      transcriptSettings.confirmClear = !transcriptSettings.confirmClear;
+      this.classList.toggle('active', transcriptSettings.confirmClear);
+      saveSettings();
+    });
+    
+    container.querySelector('#settingConfirmDeleteClip').addEventListener('click', function() {
+      transcriptSettings.confirmDeleteClip = !transcriptSettings.confirmDeleteClip;
+      this.classList.toggle('active', transcriptSettings.confirmDeleteClip);
+      saveSettings();
+    });
+    
+    // Event handlers - Formatting
     container.querySelector('#settingShowSeparators').addEventListener('click', function() {
       transcriptSettings.showSeparators = !transcriptSettings.showSeparators;
       this.classList.toggle('active', transcriptSettings.showSeparators);
@@ -663,9 +784,18 @@ function openSettingsPanel() {
       updateTranscriptDisplay();
     });
     
-    container.querySelector('#settingCopyMode').addEventListener('change', function() {
-      transcriptSettings.copyModeDefault = this.value;
+    container.querySelector('#settingCollapseBlankLines').addEventListener('click', function() {
+      transcriptSettings.collapseBlankLines = !transcriptSettings.collapseBlankLines;
+      this.classList.toggle('active', transcriptSettings.collapseBlankLines);
       saveSettings();
+      updateTranscriptDisplay();
+    });
+    
+    container.querySelector('#settingTrimWhitespace').addEventListener('click', function() {
+      transcriptSettings.trimWhitespace = !transcriptSettings.trimWhitespace;
+      this.classList.toggle('active', transcriptSettings.trimWhitespace);
+      saveSettings();
+      updateTranscriptDisplay();
     });
     
     container.querySelector('#settingBetweenClips').addEventListener('change', function() {
@@ -686,7 +816,7 @@ function openSettingsPanel() {
       saveSettings();
       updateTranscriptDisplay();
     });
-  });
+  }, { width: 380, height: 550 });
 }
 
 // Initialize ASR tab
@@ -700,10 +830,7 @@ export function init(container) {
     transcribeAllBtn: container.querySelector('#transcribeAllBtn'),
     clearBtn: container.querySelector('#clearBtn'),
     copyBtn: container.querySelector('#copyBtn'),
-    copyCleanBtn: container.querySelector('#copyCleanBtn'),
-    copySeparatorsBtn: container.querySelector('#copySeparatorsBtn'),
     downloadTxtBtn: container.querySelector('#downloadTxtBtn'),
-    settingsBtn: container.querySelector('#asrSettingsBtn'),
     transcript: container.querySelector('#transcript'),
     statusDot: container.querySelector('#asrStatusDot'),
     statusText: container.querySelector('#asrStatusText'),
@@ -728,18 +855,16 @@ export function init(container) {
   elements.stopBtn?.addEventListener('click', stopRecording);
   elements.transcribeAllBtn?.addEventListener('click', transcribeAll);
   elements.clearBtn?.addEventListener('click', (e) => {
-    // Shift+Click bypasses confirmation
-    if (e.shiftKey || confirm('Clear all clips and transcript?')) {
+    // Shift+Click bypasses confirmation; also skip if confirmClear is false
+    const shouldConfirm = transcriptSettings.confirmClear && !e.shiftKey;
+    if (!shouldConfirm || confirm('Clear all clips and transcript?')) {
       clearAllClips();
       showMessage('Cleared', 'success');
     }
   });
   
   elements.copyBtn?.addEventListener('click', () => copyTranscript());
-  elements.copyCleanBtn?.addEventListener('click', () => copyTranscript(false));
-  elements.copySeparatorsBtn?.addEventListener('click', () => copyTranscript(true));
   elements.downloadTxtBtn?.addEventListener('click', downloadTranscript);
-  elements.settingsBtn?.addEventListener('click', openSettingsPanel);
 
   // File upload handlers
   elements.uploadBtn?.addEventListener('click', () => elements.fileInput?.click());
@@ -771,7 +896,8 @@ export function init(container) {
     } else if (action === 'copy-text') {
       copyClipTranscript(id);
     } else if (action === 'remove') {
-      if (confirm('Remove this clip?')) {
+      // Skip confirmation if confirmDeleteClip is false
+      if (!transcriptSettings.confirmDeleteClip || confirm('Remove this clip?')) {
         removeClip(id);
       }
     }
@@ -783,12 +909,29 @@ export function init(container) {
     const asrTab = document.getElementById('asr-tab');
     if (!asrTab || !asrTab.classList.contains('active')) return;
     
+    // Space: toggle recording (only when body is focused)
     if (e.code === 'Space' && e.target === document.body) {
       e.preventDefault();
       if (!elements.recordBtn.disabled) {
         startRecording();
       } else if (!elements.stopBtn.disabled) {
         stopRecording();
+      }
+    }
+    
+    // Ctrl+Enter or Cmd+Enter: Transcribe All
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (!elements.transcribeAllBtn.disabled) {
+        transcribeAll();
+      }
+    }
+    
+    // Ctrl+Shift+C or Cmd+Shift+C: Copy transcript
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+      e.preventDefault();
+      if (!elements.copyBtn.disabled) {
+        copyTranscript();
       }
     }
   });
@@ -809,8 +952,10 @@ export function init(container) {
         // Note: This replaces the transcript directly, bypassing clip-based display
       }
     },
-    getClips: () => clips.slice()
+    getClips: () => clips.slice(),
+    openSettings: openSettingsPanel
   };
 }
 
-export const asr = { init, isRecording };
+export { openSettingsPanel };
+export const asr = { init, isRecording, openSettingsPanel };
