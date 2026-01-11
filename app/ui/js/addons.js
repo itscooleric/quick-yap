@@ -349,6 +349,12 @@ export const openAddonWindow = openAppWindow;
 // Re-render callback for app list
 let renderAppListCallback = null;
 
+// Check if Apps ecosystem is enabled
+function isAppsEnabled() {
+  const config = window.__YAP_CONFIG || {};
+  return config.enableApps === true;
+}
+
 // Initialize app panel (apps menu)
 export function initAppPanel() {
   const addonsBtn = document.getElementById('addonsBtn');
@@ -357,6 +363,13 @@ export function initAppPanel() {
   const addonPanelList = document.getElementById('addonPanelList');
 
   if (!addonsBtn || !addonPanel) return;
+
+  // Hide Apps button if enableApps is false
+  if (!isAppsEnabled()) {
+    addonsBtn.style.display = 'none';
+    addonPanel.style.display = 'none';
+    return;
+  }
 
   // Render app list with enable/disable toggles
   function renderAppList() {
