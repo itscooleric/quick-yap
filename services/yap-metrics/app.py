@@ -91,12 +91,20 @@ def cleanup_old_events():
         conn.commit()
 
 
-# Initialize database on startup
-@app.on_event("startup")
-async def startup():
+# Lifespan context manager for startup/shutdown
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app):
+    # Startup
     if METRICS_ENABLED:
         init_db()
         cleanup_old_events()
+    yield
+    # Shutdown (nothing to cleanup)
+
+# Update app to use lifespan
+app.router.lifespan_context = lifespan
 
 
 # Request/Response models

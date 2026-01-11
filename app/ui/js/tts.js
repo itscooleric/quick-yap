@@ -459,13 +459,33 @@ function playChunk(index) {
   });
 }
 
+// Promise that resolves when playback is resumed
+let resumePromise = null;
+let resumeResolve = null;
+
+function createResumePromise() {
+  resumePromise = new Promise(resolve => {
+    resumeResolve = resolve;
+  });
+}
+
+function signalResume() {
+  if (resumeResolve) {
+    resumeResolve();
+    resumePromise = null;
+    resumeResolve = null;
+  }
+}
+
 // Play remaining chunks after synthesis
 async function playRemainingChunks() {
   for (let i = currentChunkIndex + 1; i < chunkAudioUrls.length; i++) {
     if (!isReadAlongPlaying) break;
     
-    while (isReadAlongPaused && isReadAlongPlaying) {
-      await new Promise(r => setTimeout(r, 100));
+    // Wait for resume if paused (event-driven, not polling)
+    if (isReadAlongPaused && isReadAlongPlaying) {
+      createResumePromise();
+      await resumePromise;
     }
     
     if (!isReadAlongPlaying) break;
@@ -561,6 +581,7 @@ function pauseReadAlong() {
     readAlongAudio?.play();
     isReadAlongPaused = false;
     updatePauseButton(false);
+    signalResume(); // Signal waiting chunks to continue
   }
 }
 
@@ -576,6 +597,9 @@ function updatePauseButton(isPaused) {
 function stopReadAlong() {
   isReadAlongPlaying = false;
   isReadAlongPaused = false;
+  
+  // Signal any waiting promises to exit
+  signalResume();
   
   if (readAlongAudio) {
     readAlongAudio.pause();
