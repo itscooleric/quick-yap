@@ -15,6 +15,14 @@ Local LAN web tools for speech-to-text (ASR) and text-to-speech (TTS).
 
 ---
 
+## Quick Navigation
+
+**Tabs:** [ASR](#asr-tab) | [TTS](#tts-tab) | [Export](#export) | [Data](#data-tab-metrics) | [Settings](#configuration)
+
+**Docs:** [Quick Start](#quick-start) | [Export Guide](docs/EXPORT.md) | [Testing](tests/README.md)
+
+---
+
 ## Overview
 
 Yap provides a unified web application combining ASR (speech-to-text) and TTS (text-to-speech) in a single tabbed interface served from one domain.
@@ -70,13 +78,14 @@ This is achieved via Caddy labels (production) or nginx proxy (local mode).
 - See [Export Documentation](docs/EXPORT.md) for setup
 
 ### Data Tab (Metrics)
-- **Local-only metrics** - track ASR and TTS usage
+- **Always visible** - Access metrics and history from the main navigation
+- **Local-only metrics** - Track ASR and TTS usage, data never leaves your server
 - Summary cards showing minutes recorded, transcribed, and TTS generated
 - Event history table with filtering and pagination
 - Export history as JSON
 - Clear history functionality
-- **Enabled by default** - set `METRICS_ENABLED=false` to disable
-- Data never leaves the server
+- **Enabled by default** - Set `METRICS_ENABLED=false` in environment to disable
+- When disabled, Data tab shows a one-click enable button
 
 ### Apps (Optional)
 > **Note**: The Apps ecosystem is disabled by default. Enable it by setting `enableApps: true` in `app/ui/config.js`.

@@ -32,6 +32,7 @@ export async function init(container) {
   elements = {
     dataTabBtn: document.getElementById('dataTabBtn'),
     disabledNotice: container.querySelector('#metricsDisabledNotice'),
+    enableMetricsBtn: container.querySelector('#enableMetricsBtn'),
     summaryPanel: container.querySelector('#metricsSummary'),
     historyPanel: container.querySelector('#metricsHistoryPanel'),
     rangeButtons: container.querySelectorAll('.range-btn'),
@@ -53,11 +54,6 @@ export async function init(container) {
   metricsEnabled = config?.enabled ?? false;
 
   if (metricsEnabled) {
-    // Show Data tab button
-    if (elements.dataTabBtn) {
-      elements.dataTabBtn.style.display = '';
-    }
-    
     // Show UI
     elements.disabledNotice.style.display = 'none';
     elements.summaryPanel.style.display = 'block';
@@ -70,11 +66,25 @@ export async function init(container) {
     // Setup event handlers
     setupEventHandlers();
   } else {
-    // Hide Data tab button if metrics disabled
-    if (elements.dataTabBtn) {
-      elements.dataTabBtn.style.display = 'none';
-    }
+    // Show disabled notice with enable button
     elements.disabledNotice.style.display = 'block';
+    elements.summaryPanel.style.display = 'none';
+    elements.historyPanel.style.display = 'none';
+    
+    // Setup enable button
+    if (elements.enableMetricsBtn) {
+      elements.enableMetricsBtn.addEventListener('click', () => {
+        // Open Settings panel
+        const settingsBtn = document.getElementById('settingsBtn');
+        if (settingsBtn) {
+          settingsBtn.click();
+          // Show hint about metrics setting
+          setTimeout(() => {
+            showMessage('Enable "Enable metrics tracking" in the Data & Metrics section', 'info');
+          }, 300);
+        }
+      });
+    }
   }
 }
 
