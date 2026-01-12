@@ -221,13 +221,8 @@ async function init() {
   
   if (mobileSettingsBtn) {
     mobileSettingsBtn.addEventListener('click', () => {
-      // Open settings based on current tab
-      if (activeTab === 'asr') {
-        asr.openSettingsPanel();
-      } else {
-        // Fallback to ASR settings
-        asr.openSettingsPanel();
-      }
+      // Open ASR settings (could be made context-aware in future)
+      asr.openSettingsPanel();
     });
   }
   
