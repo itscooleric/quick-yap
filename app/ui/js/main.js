@@ -209,6 +209,28 @@ async function init() {
     });
   });
   
+  // Setup mobile toolbar global navigation
+  const mobileDataBtn = document.getElementById('mobileDataBtn');
+  const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
+  
+  if (mobileDataBtn) {
+    mobileDataBtn.addEventListener('click', () => {
+      switchTab('data');
+    });
+  }
+  
+  if (mobileSettingsBtn) {
+    mobileSettingsBtn.addEventListener('click', () => {
+      // Open settings based on current tab
+      if (activeTab === 'asr') {
+        asr.openSettingsPanel();
+      } else {
+        // Fallback to ASR settings
+        asr.openSettingsPanel();
+      }
+    });
+  }
+  
   // Setup recording indicator
   setupRecordingIndicator();
   
