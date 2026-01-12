@@ -5,9 +5,9 @@ import { util } from './util.js';
 import { createAddonWindow } from './addons.js';
 import { openExportPanel } from './export.js';
 
-// Import metrics (will be available via window.yapState if not loaded yet)
-function getMetrics() {
-  return window.yapState?.metrics || { recordEvent: () => {}, isEnabled: () => false };
+// Import data module for metrics recording
+function getDataModule() {
+  return window.yapState?.data || { recordEvent: async () => {}, isEnabled: () => false };
 }
 
 // ASR State
@@ -500,8 +500,8 @@ async function startRecording() {
       const newClip = addClip(blob, actualMimeType, durationMs);
       
       // Record metrics event
-      getMetrics().recordEvent('asr_record', {
-        duration_in_sec: durationMs / 1000,
+      getDataModule().recordEvent('asr_record', {
+        duration: durationMs / 1000,
         status: 'success'
       });
 
@@ -591,9 +591,9 @@ async function transcribeSingleClip(clip) {
     updateClipStatus(clip.id, 'transcribed', cleanedText);
     
     // Record metrics event
-    getMetrics().recordEvent('asr_transcribe', {
-      duration_in_sec: clip.durationMs / 1000,
-      chars_out: cleanedText.length,
+    getDataModule().recordEvent('asr_transcribe', {
+      duration: clip.durationMs / 1000,
+      outputChars: cleanedText.length,
       status: 'success'
     });
     
@@ -604,8 +604,8 @@ async function transcribeSingleClip(clip) {
     updateClipStatus(clip.id, 'error');
     
     // Record failed transcription
-    getMetrics().recordEvent('asr_transcribe', {
-      duration_in_sec: clip.durationMs / 1000,
+    getDataModule().recordEvent('asr_transcribe', {
+      duration: clip.durationMs / 1000,
       status: 'error'
     });
     
@@ -755,9 +755,9 @@ function openSettingsPanel() {
       <div class="form-group" style="margin-bottom: 1rem;">
         <div class="toggle-container">
           <div class="toggle-switch" id="settingEnableMetrics"></div>
-          <span style="font-size: 0.8rem; color: var(--text-primary);">Enable metrics tracking</span>
+          <span style="font-size: 0.8rem; color: var(--text-primary);">Metrics tracking status (view only)</span>
         </div>
-        <span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 2.8rem;">Local storage only • Shows Data tab • Max 5000 events, 30 days</span>
+        <span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 2.8rem;">Server-side SQLite storage • Click for configuration info • Max 5000 events, 30 days retention</span>
       </div>
       
       <div class="settings-section-title">Behavior</div>
@@ -873,26 +873,14 @@ function openSettingsPanel() {
     // Event handler - Metrics
     const metricsToggle = container.querySelector('#settingEnableMetrics');
     if (metricsToggle) {
-      const metricsEnabled = getMetrics().isEnabled();
+      // Check if metrics are enabled via data module
+      const dataModule = getDataModule();
+      const metricsEnabled = dataModule.isEnabled();
       metricsToggle.classList.toggle('active', metricsEnabled);
       
       metricsToggle.addEventListener('click', function() {
-        const newState = !getMetrics().isEnabled();
-        getMetrics().setEnabled(newState);
-        this.classList.toggle('active', newState);
-        
-        // Show message about page reload
-        if (newState) {
-          alert('Metrics enabled! The Data tab is now available in the top navigation.');
-        } else {
-          if (confirm('Disable metrics? The Data tab will be hidden but history will be preserved.')) {
-            // User confirmed
-          } else {
-            // User cancelled, revert
-            getMetrics().setEnabled(true);
-            this.classList.add('active');
-          }
-        }
+        // Since metrics are now server-side, show info message
+        alert('Metrics are controlled by the METRICS_ENABLED environment variable in your docker-compose.yml.\n\nCurrent status: ' + (metricsEnabled ? 'Enabled' : 'Disabled') + '\n\nTo change: Update METRICS_ENABLED in app/.env or docker-compose.yml and restart the yap-metrics service.');
       });
     }
     

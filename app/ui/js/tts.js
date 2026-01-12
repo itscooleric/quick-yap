@@ -4,6 +4,11 @@
 
 import { util } from './util.js';
 
+// Import data module for metrics recording
+function getDataModule() {
+  return window.yapState?.data || { recordEvent: async () => {}, isEnabled: () => false };
+}
+
 // TTS State
 let voices = [];
 let currentAudioUrl = null;
@@ -690,6 +695,13 @@ async function synthesize() {
     setStatus('done', 'Synthesis complete');
     showMessage('Audio generated successfully', 'success');
 
+    // Record metrics event
+    // Note: We don't have exact audio duration here, would need to load audio to get it
+    getDataModule().recordEvent('tts_synthesize', {
+      inputChars: text.length,
+      status: 'success'
+    });
+
     // Auto-play
     elements.audioPlayer.play().catch(() => {});
 
@@ -697,6 +709,12 @@ async function synthesize() {
     console.error('Synthesis error:', err);
     setStatus('error', 'Error');
     showMessage(`Synthesis failed: ${err.message}`, 'error');
+    
+    // Record failed synthesis
+    getDataModule().recordEvent('tts_synthesize', {
+      inputChars: text.length,
+      status: 'error'
+    });
   } finally {
     elements.synthesizeBtn.disabled = false;
     updateSynthesizeButton();
