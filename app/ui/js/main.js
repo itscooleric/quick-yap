@@ -143,12 +143,10 @@ function setupKeyboardShortcuts() {
       return;
     }
     
-    // D key - open Data tab (if metrics enabled)
+    // D key - open Data tab
     if (e.key === 'd' || e.key === 'D') {
-      if (metrics.isEnabled()) {
-        e.preventDefault();
-        switchTab('data');
-      }
+      e.preventDefault();
+      switchTab('data');
     }
     
     // S key - open Settings
@@ -211,6 +209,23 @@ async function init() {
     });
   });
   
+  // Setup mobile toolbar global navigation
+  const mobileDataBtn = document.getElementById('mobileDataBtn');
+  const mobileSettingsBtn = document.getElementById('mobileSettingsBtn');
+  
+  if (mobileDataBtn) {
+    mobileDataBtn.addEventListener('click', () => {
+      switchTab('data');
+    });
+  }
+  
+  if (mobileSettingsBtn) {
+    mobileSettingsBtn.addEventListener('click', () => {
+      // Open ASR settings (could be made context-aware in future)
+      asr.openSettingsPanel();
+    });
+  }
+  
   // Setup recording indicator
   setupRecordingIndicator();
   
@@ -227,7 +242,7 @@ async function init() {
   // Expose global helpers
   window.yapState = window.yapState || {};
   window.yapState.showMessage = showMessage;
-  window.yapState.metrics = metrics;
+  window.yapState.data = data;  // Expose data module for ASR/TTS to record events
 }
 
 // Wait for DOM ready

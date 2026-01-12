@@ -21,7 +21,7 @@
         <nav class="nav-tabs">
           <button data-tab="asr" class="active">ASR</button>
           <button data-tab="tts">TTS</button>
-          <button data-tab="data" id="dataTabBtn" style="display: none;">Data</button>
+          <button data-tab="data" id="dataTabBtn">Data</button>
           <button id="addonsBtn">Apps</button>
           <button id="settingsBtn" class="settings-btn" title="Settings">Settings</button>
         </nav>
@@ -50,6 +50,14 @@
             <button id="mobileExportBtn" class="mobile-btn" disabled title="Export">
               <span class="mobile-btn-icon">📤</span>
               <span class="mobile-btn-label">Export</span>
+            </button>
+            <button id="mobileDataBtn" class="mobile-btn" title="Data">
+              <span class="mobile-btn-icon">📊</span>
+              <span class="mobile-btn-label">Data</span>
+            </button>
+            <button id="mobileSettingsBtn" class="mobile-btn" title="Settings">
+              <span class="mobile-btn-icon">⚙️</span>
+              <span class="mobile-btn-label">Settings</span>
             </button>
             <button id="mobileMenuBtn" class="mobile-btn" title="More">
               <span class="mobile-btn-icon">⋯</span>
@@ -223,8 +231,10 @@
           <div class="panel-header">Metrics Summary</div>
           
           <div id="metricsDisabledNotice" class="notice">
-            <p>Metrics collection is disabled.</p>
-            <p class="notice-hint">Enable it by setting <code>METRICS_ENABLED=true</code> in your environment.</p>
+            <p><strong>Metrics are disabled</strong></p>
+            <p class="notice-hint">Track your ASR and TTS usage with local-only metrics. No data leaves your server.</p>
+            <button id="enableMetricsBtn" class="primary" style="margin-top: 1rem;">Enable Metrics</button>
+            <p class="notice-hint" style="margin-top: 0.5rem; font-size: 0.75rem;">You can also enable in Settings or set <code>METRICS_ENABLED=true</code> in docker environment.</p>
           </div>
           
           <div id="metricsSummary" style="display: none;">

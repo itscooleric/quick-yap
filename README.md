@@ -15,6 +15,21 @@ Local LAN web tools for speech-to-text (ASR) and text-to-speech (TTS).
 
 ---
 
+## Quick Navigation
+
+**Tabs:** [ASR](#asr-tab) | [TTS](#tts-tab) | [Export](#export) | [Data](#data-tab-metrics) | [Settings](#configuration)
+
+**Documentation:**
+- 📖 [User Guide](docs/USER_GUIDE.md) - Complete interface and workflow documentation
+- 📊 [Data & Metrics](docs/DATA.md) - Usage tracking and analytics
+- 📱 [Mobile & Tablet](docs/MOBILE.md) - Touch-optimized interface guide
+- 📤 [Export Setup](docs/EXPORT.md) - GitLab, GitHub, SFTP, and webhook configuration
+- 🧪 [Testing](tests/README.md) - Automated test suite documentation
+
+**Quick Links:** [Quick Start](#quick-start) | [Troubleshooting](#troubleshooting) | [Security](#security-notes)
+
+---
+
 ## Overview
 
 Yap provides a unified web application combining ASR (speech-to-text) and TTS (text-to-speech) in a single tabbed interface served from one domain.
@@ -38,45 +53,48 @@ This is achieved via Caddy labels (production) or nginx proxy (local mode).
 ## Features
 
 ### ASR Tab
-- Browser-based multi-clip audio recording
-- Live waveform visualization with recording timer
-- Whisper-powered transcription with per-clip status
-- Single Copy button (copies displayed transcript)
-- Configurable transcript settings (separators, whitespace cleanup)
+- Browser-based multi-clip audio recording with live waveform visualization
+- Whisper-powered transcription with per-clip status tracking
+- Single Copy button copies complete transcript
+- Configurable transcript formatting (separators, whitespace cleanup)
 - Auto-transcribe and auto-copy options
-- **Export** to GitLab, GitHub, or SFTP
-- Keyboard shortcuts:
-  - Space: Start/stop recording
-  - Ctrl+Enter: Transcribe all
-  - Ctrl+Shift+C: Copy transcript
+- **Export** to GitLab, GitHub, SFTP, or webhooks
+- Keyboard shortcuts: Space (record/stop), Ctrl+Enter (transcribe), Ctrl+Shift+C (copy)
+
+**See the [User Guide](docs/USER_GUIDE.md) for detailed ASR documentation.**
 
 ### TTS Tab
-- Text input or file upload (supports .txt and .md)
+- Text input or file upload (supports .txt and .md files)
 - Multiple voice selection with preference persistence
-- Adjustable speaking rate
+- Adjustable speaking rate (0.5× to 2.0×)
 - **Markdown preview** with prominent Plain/Markdown toggle
 - **Read-along mode** with dedicated panel and paragraph highlighting
 - Audio playback with Media Session API support
-- Download generated audio
+- Download generated audio as .wav files
 - Keyboard shortcut: Ctrl+Enter to synthesize
 
+**See the [User Guide](docs/USER_GUIDE.md) for detailed TTS documentation.**
+
 ### Export
-- Export transcripts to GitLab or GitHub repositories (commit files)
-- Upload transcripts via SFTP
-- **Generic webhooks** - POST to any HTTP endpoint (n8n, Zapier, etc.)
+- Export transcripts to **GitLab** or **GitHub** repositories (commit files directly)
+- Upload transcripts via **SFTP**
+- **Generic webhooks** - POST to any HTTP endpoint (n8n, Zapier, custom servers)
 - **GitLab via Webhook** - Commit via proxy server (recommended, avoids CORS)
-- **GitLab Direct** - Direct API calls with CORS detection
-- Save export profiles for quick access
-- See [Export Documentation](docs/EXPORT.md) for setup
+- Save export profiles for quick access and one-tap export
+
+**See the [Export Guide](docs/EXPORT.md) for complete setup instructions.**
 
 ### Data Tab (Metrics)
-- **Local-only metrics** - track ASR and TTS usage
-- Summary cards showing minutes recorded, transcribed, and TTS generated
-- Event history table with filtering and pagination
-- Export history as JSON
-- Clear history functionality
-- **Enabled by default** - set `METRICS_ENABLED=false` to disable
-- Data never leaves the server
+- **Always visible** in main navigation for easy access
+- **Local-only metrics** - Track ASR and TTS usage, data never leaves your server
+- Summary cards: minutes recorded, transcribed, and TTS generated
+- Event history table with filtering, pagination, and timestamps
+- Export history as JSON for analysis
+- Clear history functionality with confirmation
+- **Enabled by default** - Set `METRICS_ENABLED=false` to disable
+- When disabled, shows one-click enable button
+
+**See the [Data & Metrics Guide](docs/DATA.md) for complete documentation.**
 
 ### Apps (Optional)
 > **Note**: The Apps ecosystem is disabled by default. Enable it by setting `enableApps: true` in `app/ui/config.js`.
@@ -311,49 +329,23 @@ yap/
 
 ## Export Configuration
 
-The Export feature allows you to commit transcripts to GitLab/GitHub repositories or upload via SFTP. This requires running the YAP Exporter service.
+The Export feature allows you to commit transcripts to GitLab/GitHub or upload via SFTP.
 
-### Starting the Exporter
-
+**Quick Start:**
 ```bash
 cd exporter
 cp .env.example .env
-# Edit .env with your tokens
+# Edit .env with your GitLab/GitHub tokens or SFTP credentials
 docker compose up -d
 ```
 
-### Configuration
+**Token Requirements:**
+- **GitLab**: Personal access token with `api` scope
+- **GitHub**: Personal access token with `repo` scope or fine-grained token with "Contents: Read and write"
 
-Edit `exporter/.env` with your credentials:
+> **Security Warning**: The exporter service stores API tokens. Run on localhost only (default) and do not expose to public internet without authentication.
 
-```bash
-# GitLab
-GITLAB_URL=https://gitlab.com
-GITLAB_TOKEN=glpat-xxxx
-
-# GitHub
-GITHUB_API_URL=https://api.github.com
-GITHUB_TOKEN=ghp_xxxx
-
-# SFTP (optional)
-SFTP_HOST=sftp.example.com
-SFTP_USER=username
-SFTP_PASSWORD=password
-
-# Ollama for commit message generation (optional)
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3
-```
-
-### Token Permissions
-
-**GitLab**: Create a personal access token with `api` scope.
-
-**GitHub**: Create a personal access token (classic) with `repo` scope, or a fine-grained token with "Contents: Read and write" permission.
-
-### Security Notes
-
-> **Warning**: The exporter service holds API tokens. Do not expose it to the public internet without authentication.
+**For complete export setup, configuration, and troubleshooting, see the [Export Guide](docs/EXPORT.md).**
 
 - Run on `localhost` only (default)
 - Tokens are stored server-side, not in the browser
