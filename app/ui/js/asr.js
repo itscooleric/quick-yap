@@ -874,7 +874,7 @@ function openSettingsPanel() {
       saveSettings();
       updateTranscriptDisplay();
     });
-  }, { width: 380, height: 550 });
+  }, { width: 380, height: 550, windowId: 'settings' });
 }
 
 // Initialize ASR tab
