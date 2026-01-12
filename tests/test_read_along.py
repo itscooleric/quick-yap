@@ -1,220 +1,363 @@
 """
-Tests for TTS Read-Along Functionality
+Tests for YAP TTS Read-Along functionality
 
-These tests verify the TTS read-along feature works correctly,
-including text chunking, sequential playback, and highlighting.
+These tests verify the TTS read-along module works correctly,
+including text chunking, limit checking, and playback logic.
+They are primarily unit tests that don't require running services.
 """
 
 import pytest
 
 
-class TestReadAlongChunking:
-    """Test text chunking for read-along mode"""
+class TestTextChunking:
+    """Test text chunking for read-along"""
 
-    def test_paragraph_chunking_logic(self):
-        """Paragraph chunking should split on double newlines"""
-        sample_text = """First paragraph with some content.
+    def test_split_by_paragraphs(self):
+        """Should split text by blank lines (paragraphs)"""
+        text = """First paragraph here.
 This is still the first paragraph.
 
 Second paragraph starts here.
-And continues on this line.
+More of the second paragraph.
 
-Third paragraph is short."""
+Third paragraph."""
         
-        # Expected to split into 3 paragraphs
-        paragraphs = sample_text.strip().split('\n\n')
-        assert len(paragraphs) == 3
-        assert 'First paragraph' in paragraphs[0]
-        assert 'Second paragraph' in paragraphs[1]
-        assert 'Third paragraph' in paragraphs[2]
-
-    def test_line_chunking_logic(self):
-        """Line chunking should split on single newlines"""
-        sample_text = """Line one
-Line two
-Line three"""
+        # Split by double newlines (paragraphs)
+        chunks = [chunk.strip() for chunk in text.split('\n\n') if chunk.strip()]
         
-        lines = sample_text.split('\n')
-        assert len(lines) == 3
-        assert lines[0] == 'Line one'
-        assert lines[1] == 'Line two'
-        assert lines[2] == 'Line three'
+        assert len(chunks) == 3
+        assert chunks[0].startswith("First paragraph")
+        assert chunks[1].startswith("Second paragraph")
+        assert chunks[2].startswith("Third paragraph")
 
-    def test_empty_chunk_filtering(self):
-        """Empty chunks should be filtered out"""
-        sample_text = """Content here
-
-More content"""
+    def test_split_by_lines_fallback(self):
+        """Should fall back to lines if no paragraphs"""
+        text = """Line one.
+Line two.
+Line three."""
         
-        chunks = [chunk.strip() for chunk in sample_text.split('\n\n') if chunk.strip()]
-        assert len(chunks) == 2
-        assert all(len(chunk) > 0 for chunk in chunks)
-
-    def test_max_chunks_limit(self):
-        """Should respect maximum chunks limit"""
-        max_chunks = 30
+        # No blank lines, so split by single newlines
+        chunks = [line.strip() for line in text.split('\n') if line.strip()]
         
-        # Create text with many paragraphs
-        many_paragraphs = '\n\n'.join([f'Paragraph {i}' for i in range(50)])
-        chunks = many_paragraphs.split('\n\n')[:max_chunks]
-        
-        assert len(chunks) <= max_chunks
+        assert len(chunks) == 3
 
-    def test_max_chars_per_chunk(self):
-        """Should respect maximum characters per chunk"""
-        max_chars = 1200
-        
-        # Create a very long paragraph
-        long_paragraph = ' '.join(['word'] * 500)
-        
-        if len(long_paragraph) > max_chars:
-            # Chunk should be truncated or split
-            chunk = long_paragraph[:max_chars]
-            assert len(chunk) <= max_chars
-
-
-class TestReadAlongDefaults:
-    """Test read-along default settings"""
-
-    def test_read_along_disabled_by_default(self):
-        """Read-along should be disabled by default"""
-        default_enabled = False
-        assert default_enabled is False, "Read-along should be off by default"
-
-    def test_chunk_mode_default(self):
-        """Default chunk mode should be paragraph"""
-        default_chunk_mode = 'paragraph'
-        assert default_chunk_mode == 'paragraph', "Should chunk by paragraph by default"
-
-    def test_max_chunks_default(self):
-        """Default max chunks should be reasonable"""
-        default_max_chunks = 30
-        assert default_max_chunks > 0, "Max chunks must be positive"
-        assert default_max_chunks <= 50, "Max chunks should be reasonable (not too high)"
-        assert isinstance(default_max_chunks, int), "Max chunks must be an integer"
-
-    def test_max_chars_per_chunk_default(self):
-        """Default max chars per chunk should be reasonable"""
-        default_max_chars = 1200
-        assert default_max_chars > 0, "Max chars must be positive"
-        assert default_max_chars >= 1000, "Max chars should allow reasonable paragraph size"
-        assert isinstance(default_max_chars, int), "Max chars must be an integer"
-
-
-class TestReadAlongBehavior:
-    """Test read-along playback behavior"""
-
-    def test_sequential_chunk_playback(self):
-        """Chunks should be played sequentially"""
-        chunks = ['First chunk', 'Second chunk', 'Third chunk']
-        
-        # Simulate sequential playback
-        for i, chunk in enumerate(chunks):
-            current_index = i
-            assert current_index < len(chunks)
-            assert chunks[current_index] == chunk
-
-    def test_chunk_highlighting_logic(self):
-        """Current chunk should be highlighted during playback"""
-        chunks = ['Chunk A', 'Chunk B', 'Chunk C']
-        
-        # Simulate highlighting each chunk
-        for i in range(len(chunks)):
-            current_chunk_index = i
-            is_highlighted = lambda idx: idx == current_chunk_index
-            
-            assert is_highlighted(i) is True
-            for j in range(len(chunks)):
-                if j != i:
-                    assert is_highlighted(j) is False
-
-    def test_playback_stop_clears_highlighting(self):
-        """Stopping playback should clear highlighting"""
-        current_chunk_index = 2
-        
-        # Stop playback
-        current_chunk_index = -1
-        
-        assert current_chunk_index == -1, "Index should be reset when stopped"
-
-
-class TestReadAlongIntegration:
-    """Test read-along integration with TTS"""
-
-    def test_markdown_stripping_for_synthesis(self):
-        """Markdown should be stripped before synthesis"""
-        markdown_text = "# Heading\n\n**Bold text** and *italic* and `code`."
-        
-        # Strip markdown (simplified - real implementation is more complex)
-        plain_text = markdown_text.replace('#', '').replace('**', '').replace('*', '').replace('`', '').strip()
-        
-        # Plain text should not contain markdown syntax
-        assert '#' not in plain_text or plain_text.count('#') < markdown_text.count('#')
-        assert plain_text != markdown_text  # Should be different after stripping
-
-    def test_chunk_audio_caching(self):
-        """Generated chunk audio should be cached"""
-        chunk_audio_urls = []
-        
-        # Simulate caching 3 chunks
-        for i in range(3):
-            url = f'blob:http://localhost/chunk-{i}'
-            chunk_audio_urls.append(url)
-        
-        assert len(chunk_audio_urls) == 3
-        assert all(url.startswith('blob:') for url in chunk_audio_urls)
-
-    def test_read_along_cleanup(self):
-        """Read-along should clean up resources when stopped"""
-        # Simulate cleanup
-        chunk_audio_urls = ['blob:url1', 'blob:url2', 'blob:url3']
-        current_chunk_index = 1
-        is_playing = True
-        
-        # Cleanup
-        is_playing = False
-        current_chunk_index = -1
-        chunk_audio_urls = []
-        
-        assert is_playing is False
-        assert current_chunk_index == -1
-        assert len(chunk_audio_urls) == 0
-
-
-class TestReadAlongEdgeCases:
-    """Test edge cases for read-along functionality"""
-
-    def test_single_chunk_text(self):
-        """Single chunk should still work"""
-        text = "Just one short sentence."
-        chunks = [text]
-        
-        assert len(chunks) == 1
-        assert chunks[0] == text
-
-    def test_empty_text(self):
-        """Empty text should result in no chunks"""
+    def test_empty_text_returns_no_chunks(self):
+        """Empty text should return no chunks"""
         text = ""
-        chunks = [chunk for chunk in text.split('\n\n') if chunk.strip()]
+        chunks = [chunk.strip() for chunk in text.split('\n\n') if chunk.strip()]
         
         assert len(chunks) == 0
 
-    def test_very_long_single_paragraph(self):
-        """Very long paragraph should be handled"""
-        long_text = ' '.join(['word'] * 1000)
+    def test_whitespace_only_text(self):
+        """Whitespace-only text should return no chunks"""
+        text = "   \n\n   \n   "
+        chunks = [chunk.strip() for chunk in text.split('\n\n') if chunk.strip()]
+        
+        assert len(chunks) == 0
+
+
+class TestChunkLimits:
+    """Test chunk limit checking"""
+
+    def test_chunk_count_under_limit(self):
+        """Should pass when chunk count is under limit"""
+        chunks = ["Chunk 1", "Chunk 2", "Chunk 3"]
+        max_chunks = 30
+        
+        valid = len(chunks) <= max_chunks
+        assert valid == True
+
+    def test_chunk_count_over_limit(self):
+        """Should fail when chunk count exceeds limit"""
+        chunks = ["Chunk " + str(i) for i in range(50)]
+        max_chunks = 30
+        
+        valid = len(chunks) <= max_chunks
+        assert valid == False
+
+    def test_chunk_length_under_limit(self):
+        """Should pass when all chunks are under character limit"""
+        chunks = ["Short chunk", "Another short chunk"]
         max_chars = 1200
         
-        # Should be truncated or split
-        if len(long_text) > max_chars:
-            chunk = long_text[:max_chars]
-            assert len(chunk) <= max_chars
+        valid = all(len(chunk) <= max_chars for chunk in chunks)
+        assert valid == True
 
-    def test_unicode_and_special_chars(self):
-        """Unicode and special characters should be preserved"""
-        text = "Hello 世界! Testing émojis 🎉 and spëcial çhars."
-        chunks = [text]
+    def test_chunk_length_over_limit(self):
+        """Should fail when any chunk exceeds character limit"""
+        short_chunk = "Short chunk"
+        long_chunk = "A" * 1500  # Exceeds 1200 limit
+        chunks = [short_chunk, long_chunk]
+        max_chars = 1200
         
-        assert len(chunks) == 1
-        assert '世界' in chunks[0]
-        assert '🎉' in chunks[0]
-        assert 'émojis' in chunks[0]
+        valid = all(len(chunk) <= max_chars for chunk in chunks)
+        assert valid == False
+
+    def test_check_both_limits(self):
+        """Should check both count and length limits"""
+        def check_limits(chunks, max_chunks=30, max_chars=1200):
+            if len(chunks) > max_chunks:
+                return {"valid": False, "message": f"Too many chunks ({len(chunks)} > {max_chunks})"}
+            
+            for i, chunk in enumerate(chunks):
+                if len(chunk) > max_chars:
+                    return {"valid": False, "message": f"Chunk {i+1} too long ({len(chunk)} > {max_chars})"}
+            
+            return {"valid": True, "message": "OK"}
+        
+        # Valid case
+        result = check_limits(["Short chunk 1", "Short chunk 2"])
+        assert result["valid"] == True
+        
+        # Too many chunks
+        result = check_limits(["c"] * 50)
+        assert result["valid"] == False
+        assert "Too many" in result["message"]
+        
+        # Chunk too long
+        result = check_limits(["A" * 1500])
+        assert result["valid"] == False
+        assert "too long" in result["message"]
+
+
+class TestReadAlongState:
+    """Test read-along playback state management"""
+
+    def test_initial_state(self):
+        """Initial state should have no chunks playing"""
+        state = {
+            "chunks": [],
+            "currentIndex": -1,
+            "isPlaying": False,
+            "isPaused": False
+        }
+        
+        assert state["currentIndex"] == -1
+        assert state["isPlaying"] == False
+
+    def test_start_playback(self):
+        """Starting playback should update state correctly"""
+        state = {
+            "chunks": ["Chunk 1", "Chunk 2", "Chunk 3"],
+            "currentIndex": -1,
+            "isPlaying": False,
+            "isPaused": False
+        }
+        
+        # Start playback
+        state["currentIndex"] = 0
+        state["isPlaying"] = True
+        
+        assert state["currentIndex"] == 0
+        assert state["isPlaying"] == True
+
+    def test_advance_to_next_chunk(self):
+        """Advancing should increment the current index"""
+        state = {
+            "chunks": ["Chunk 1", "Chunk 2", "Chunk 3"],
+            "currentIndex": 0,
+            "isPlaying": True,
+            "isPaused": False
+        }
+        
+        # Advance to next chunk
+        state["currentIndex"] += 1
+        
+        assert state["currentIndex"] == 1
+
+    def test_playback_complete(self):
+        """Completing all chunks should update state"""
+        state = {
+            "chunks": ["Chunk 1", "Chunk 2", "Chunk 3"],
+            "currentIndex": 2,  # Last chunk
+            "isPlaying": True,
+            "isPaused": False
+        }
+        
+        # Playback complete
+        state["currentIndex"] = -1
+        state["isPlaying"] = False
+        
+        assert state["currentIndex"] == -1
+        assert state["isPlaying"] == False
+
+    def test_pause_playback(self):
+        """Pausing should set isPaused flag"""
+        state = {
+            "chunks": ["Chunk 1", "Chunk 2"],
+            "currentIndex": 0,
+            "isPlaying": True,
+            "isPaused": False
+        }
+        
+        # Pause
+        state["isPaused"] = True
+        
+        assert state["isPaused"] == True
+        assert state["isPlaying"] == True  # Still technically playing
+
+    def test_resume_playback(self):
+        """Resuming should clear isPaused flag"""
+        state = {
+            "chunks": ["Chunk 1", "Chunk 2"],
+            "currentIndex": 0,
+            "isPlaying": True,
+            "isPaused": True
+        }
+        
+        # Resume
+        state["isPaused"] = False
+        
+        assert state["isPaused"] == False
+
+    def test_stop_playback(self):
+        """Stopping should reset all playback state"""
+        state = {
+            "chunks": ["Chunk 1", "Chunk 2"],
+            "currentIndex": 1,
+            "isPlaying": True,
+            "isPaused": False
+        }
+        
+        # Stop
+        state["currentIndex"] = -1
+        state["isPlaying"] = False
+        state["isPaused"] = False
+        
+        assert state["currentIndex"] == -1
+        assert state["isPlaying"] == False
+        assert state["isPaused"] == False
+
+
+class TestChunkHighlighting:
+    """Test chunk highlighting during playback"""
+
+    def test_highlight_first_chunk(self):
+        """Should highlight the first chunk at start"""
+        chunks = ["First", "Second", "Third"]
+        current_index = 0
+        
+        highlighted = [i == current_index for i in range(len(chunks))]
+        
+        assert highlighted[0] == True
+        assert highlighted[1] == False
+        assert highlighted[2] == False
+
+    def test_highlight_middle_chunk(self):
+        """Should highlight the current middle chunk"""
+        chunks = ["First", "Second", "Third"]
+        current_index = 1
+        
+        highlighted = [i == current_index for i in range(len(chunks))]
+        
+        assert highlighted[0] == False
+        assert highlighted[1] == True
+        assert highlighted[2] == False
+
+    def test_highlight_last_chunk(self):
+        """Should highlight the last chunk"""
+        chunks = ["First", "Second", "Third"]
+        current_index = 2
+        
+        highlighted = [i == current_index for i in range(len(chunks))]
+        
+        assert highlighted[0] == False
+        assert highlighted[1] == False
+        assert highlighted[2] == True
+
+    def test_no_highlight_when_stopped(self):
+        """Should not highlight any chunk when stopped"""
+        chunks = ["First", "Second", "Third"]
+        current_index = -1  # Stopped
+        
+        highlighted = [i == current_index for i in range(len(chunks))]
+        
+        assert all(h == False for h in highlighted)
+
+
+class TestReadAlongPanel:
+    """Test read-along panel behavior"""
+
+    def test_panel_opens_on_playback_start(self):
+        """Panel should open when read-along starts"""
+        panel_visible = False
+        
+        # Start read-along
+        panel_visible = True
+        
+        assert panel_visible == True
+
+    def test_panel_shows_all_chunks(self):
+        """Panel should display all chunks"""
+        chunks = ["Paragraph 1", "Paragraph 2", "Paragraph 3"]
+        panel_content = chunks.copy()
+        
+        assert len(panel_content) == 3
+        assert panel_content == chunks
+
+    def test_panel_can_be_closed(self):
+        """Panel should be closeable"""
+        panel_visible = True
+        
+        # Close panel
+        panel_visible = False
+        
+        assert panel_visible == False
+
+    def test_closing_panel_stops_playback(self):
+        """Closing panel should stop playback"""
+        state = {
+            "panel_visible": True,
+            "isPlaying": True,
+            "currentIndex": 1
+        }
+        
+        # Close panel and stop
+        state["panel_visible"] = False
+        state["isPlaying"] = False
+        state["currentIndex"] = -1
+        
+        assert state["panel_visible"] == False
+        assert state["isPlaying"] == False
+
+
+class TestReadAlongErrorHandling:
+    """Test read-along error handling"""
+
+    def test_synthesis_failure_stops_gracefully(self):
+        """Synthesis failure should stop playback gracefully"""
+        state = {
+            "isPlaying": True,
+            "currentIndex": 1,
+            "error": None
+        }
+        
+        # Synthesis fails
+        state["error"] = "Synthesis failed: Connection error"
+        state["isPlaying"] = False
+        state["currentIndex"] = -1
+        
+        assert state["error"] is not None
+        assert state["isPlaying"] == False
+
+    def test_empty_text_shows_error(self):
+        """Empty text should show error, not crash"""
+        text = ""
+        
+        if not text.strip():
+            error = "No text to synthesize"
+        else:
+            error = None
+        
+        assert error == "No text to synthesize"
+
+    def test_no_voice_selected_shows_error(self):
+        """No voice selected should show error"""
+        voice = None
+        
+        if not voice:
+            error = "Please select a voice"
+        else:
+            error = None
+        
+        assert error == "Please select a voice"

@@ -3,6 +3,7 @@
 
 import { asr } from './asr.js';
 import { tts } from './tts.js';
+import * as data from './data.js';
 import { initAddonPanel } from './addons.js';
 import { metrics } from './metrics.js';
 
@@ -162,7 +163,7 @@ function setupKeyboardShortcuts() {
 }
 
 // Initialize application
-function init() {
+async function init() {
   // Cache tab elements
   tabs.asr = document.getElementById('asr-tab');
   tabs.tts = document.getElementById('tts-tab');
@@ -178,9 +179,9 @@ function init() {
     tts.init(tabs.tts);
   }
   
-  // Initialize metrics/data tab
+  // Initialize Data/Metrics tab
   if (tabs.data) {
-    metrics.init();
+    await data.init(tabs.data);
   }
   
   // Initialize addon panel and settings
