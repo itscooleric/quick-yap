@@ -223,82 +223,6 @@ export function isRecording() {
   return mediaRecorder && mediaRecorder.state === 'recording';
 }
 
-// Microphone status pill and selector management
-function updateMicStatusPill() {
-  const pill = elements.micStatusPill;
-  const label = elements.micStatusLabel;
-  if (!pill || !label) return;
-  
-  const micLabel = audioDevices.getActiveMicLabel();
-  label.textContent = micLabel;
-  
-  // Update visual state
-  const isRecordingNow = isRecording();
-  pill.classList.toggle('recording', isRecordingNow);
-}
-
-function updateMicSelector() {
-  const selector = elements.micSelector;
-  const selectorWrapper = elements.micSelectorWrapper;
-  const enableBtn = elements.micEnableBtn;
-  
-  if (!selector) return;
-  
-  const devices = audioDevices.getDevices();
-  const shouldShow = audioDevices.shouldShowSelector();
-  const hasLabels = audioDevices.hasLabels();
-  
-  // Show/hide enable button based on permission state
-  if (enableBtn) {
-    enableBtn.style.display = hasLabels ? 'none' : 'inline-block';
-  }
-  
-  // Show/hide selector based on device availability
-  if (selectorWrapper) {
-    selectorWrapper.style.display = shouldShow ? 'block' : 'none';
-  }
-  
-  if (!shouldShow) return;
-  
-  // Populate selector options
-  const selectedId = audioDevices.getSelectedDeviceId();
-  selector.innerHTML = '';
-  
-  // Add default option
-  const defaultOpt = document.createElement('option');
-  defaultOpt.value = '';
-  defaultOpt.textContent = 'Default microphone';
-  defaultOpt.selected = !selectedId;
-  selector.appendChild(defaultOpt);
-  
-  // Add device options
-  devices.forEach(device => {
-    if (device.deviceId === 'default') return; // Skip duplicate default
-    const opt = document.createElement('option');
-    opt.value = device.deviceId;
-    opt.textContent = device.label || `Microphone (${device.deviceId.substring(0, 8)}...)`;
-    opt.selected = device.deviceId === selectedId;
-    selector.appendChild(opt);
-  });
-}
-
-async function handleMicEnableClick() {
-  const success = await audioDevices.requestMicPermission();
-  if (success) {
-    updateMicSelector();
-    updateMicStatusPill();
-    showMessage('Microphone access enabled', 'success');
-  } else {
-    showMessage('Microphone access denied', 'error');
-  }
-}
-
-function handleMicSelectorChange(e) {
-  const deviceId = e.target.value || null;
-  audioDevices.selectDevice(deviceId);
-  updateMicStatusPill();
-}
-
 // Bar meter visualization
 function drawBarMeter() {
   if (!analyser || !elements.canvas) return;
@@ -596,7 +520,6 @@ async function startRecording() {
     if (audioTrack) {
       const settings = audioTrack.getSettings();
       audioDevices.setActualActiveDeviceId(settings.deviceId || null);
-      updateMicStatusPill();
     }
 
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -652,7 +575,6 @@ async function startRecording() {
       
       // Clear actual active device (no longer recording)
       audioDevices.setActualActiveDeviceId(null);
-      updateMicStatusPill();
 
       setStatus('done', 'Clip saved');
       
@@ -682,9 +604,9 @@ async function startRecording() {
     drawBarMeter();
 
     setStatus('recording', 'Recording...');
-    elements.recordBtn.disabled = true;
+    // Update toggle button to show Stop state
+    elements.recordBtn.textContent = 'Stop';
     elements.recordBtn.classList.add('recording');
-    elements.stopBtn.disabled = false;
     updateRecordingIndicator();
     updateMobileToolbarState();
 
@@ -708,10 +630,19 @@ function stopRecording() {
   if (mediaRecorder && mediaRecorder.state !== 'inactive') {
     mediaRecorder.stop();
   }
-  elements.recordBtn.disabled = false;
+  // Update toggle button to show Record state
+  elements.recordBtn.textContent = 'Record';
   elements.recordBtn.classList.remove('recording');
-  elements.stopBtn.disabled = true;
   updateMobileToolbarState();
+}
+
+// Toggle between recording and stopping
+function toggleRecording() {
+  if (isRecording()) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
 }
 
 // Transcription
@@ -867,11 +798,51 @@ function showMessage(text, type = '') {
 
 // Settings panel
 function openSettingsPanel() {
+  // Get current mic info for display
+  const hasLabels = audioDevices.hasLabels();
+  const activeMicLabel = audioDevices.getActiveMicLabel();
+  const devices = audioDevices.getDevices();
+  const selectedId = audioDevices.getSelectedDeviceId();
+  const shouldShowSelector = audioDevices.shouldShowSelector();
+  
   createAddonWindow('Settings', (container) => {
     const enableToolbarChecked = mobileSettings.enableMobileToolbar === null ? '' : (mobileSettings.enableMobileToolbar ? 'checked' : '');
     const toolbarDisabled = mobileSettings.enableMobileToolbar === null;
     
+    // Build mic options HTML
+    let micOptionsHtml = '<option value="">Default microphone</option>';
+    if (hasLabels && devices.length > 0) {
+      devices.forEach(device => {
+        if (device.deviceId === 'default') return;
+        const selected = device.deviceId === selectedId ? 'selected' : '';
+        const label = device.label || `Microphone (${device.deviceId.substring(0, 8)}...)`;
+        micOptionsHtml += `<option value="${device.deviceId}" ${selected}>${label}</option>`;
+      });
+    }
+    
     container.innerHTML = `
+      <div class="settings-section-title">Microphone</div>
+      
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+          Active mic: <span id="settingActiveMic" style="color: var(--text-primary);">${activeMicLabel}</span>
+        </div>
+        ${!hasLabels ? `
+          <button id="settingMicEnableBtn" class="small" style="margin-bottom: 0.5rem;">Enable microphone access</button>
+          <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Grant permission to see available devices</span>
+        ` : ''}
+        ${shouldShowSelector ? `
+          <label style="margin-bottom: 0.5rem;">Select microphone</label>
+          <select id="settingMicSelector" class="formatting-select" style="width: 100%;">
+            ${micOptionsHtml}
+          </select>
+          <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">Selection persists across sessions</span>
+        ` : ''}
+        ${hasLabels && !shouldShowSelector ? `
+          <span style="font-size: 0.7rem; color: var(--text-muted);">Only one microphone available</span>
+        ` : ''}
+      </div>
+      
       <div class="settings-section-title">Mobile/Tablet</div>
       
       <div class="form-group" style="margin-bottom: 1rem;">
@@ -1000,6 +971,40 @@ function openSettingsPanel() {
         <p><strong>Ctrl+Shift+C</strong> – Copy transcript</p>
       </div>
     `;
+    
+    // Event handlers - Microphone Settings
+    const micEnableBtn = container.querySelector('#settingMicEnableBtn');
+    if (micEnableBtn) {
+      micEnableBtn.addEventListener('click', async function() {
+        const success = await audioDevices.requestMicPermission();
+        if (success) {
+          showMessage('Microphone access enabled', 'success');
+          // Close and re-open settings to refresh UI with device list
+          // Find and close the current settings window
+          const settingsWindow = container.closest('.addon-window');
+          if (settingsWindow) {
+            settingsWindow.remove();
+          }
+          // Re-open with fresh state
+          setTimeout(() => openSettingsPanel(), 100);
+        } else {
+          showMessage('Microphone access denied', 'error');
+        }
+      });
+    }
+    
+    const micSelector = container.querySelector('#settingMicSelector');
+    if (micSelector) {
+      micSelector.addEventListener('change', function(e) {
+        const deviceId = e.target.value || null;
+        audioDevices.selectDevice(deviceId);
+        // Update the active mic label
+        const activeMicSpan = container.querySelector('#settingActiveMic');
+        if (activeMicSpan) {
+          activeMicSpan.textContent = audioDevices.getActiveMicLabel();
+        }
+      });
+    }
     
     // Event handlers - Mobile Settings
     container.querySelector('#settingEnableToolbar').addEventListener('click', function() {
@@ -1337,7 +1342,6 @@ export async function init(container) {
   // Cache DOM elements
   elements = {
     recordBtn: container.querySelector('#recordBtn'),
-    stopBtn: container.querySelector('#stopBtn'),
     transcribeAllBtn: container.querySelector('#transcribeAllBtn'),
     clearBtn: container.querySelector('#clearBtn'),
     copyBtn: container.querySelector('#copyBtn'),
@@ -1353,13 +1357,7 @@ export async function init(container) {
     clipsCount: container.querySelector('#clipsCount'),
     fileInput: container.querySelector('#asrFileInput'),
     uploadBtn: container.querySelector('#asrUploadBtn'),
-    fileName: container.querySelector('#asrFileName'),
-    // Mic selector elements
-    micStatusPill: container.querySelector('#micStatusPill'),
-    micStatusLabel: container.querySelector('#micStatusLabel'),
-    micSelector: container.querySelector('#micSelector'),
-    micSelectorWrapper: container.querySelector('#micSelectorWrapper'),
-    micEnableBtn: container.querySelector('#micEnableBtn')
+    fileName: container.querySelector('#asrFileName')
   };
   
   if (elements.canvas) {
@@ -1369,8 +1367,7 @@ export async function init(container) {
   }
 
   // Event listeners
-  elements.recordBtn?.addEventListener('click', startRecording);
-  elements.stopBtn?.addEventListener('click', stopRecording);
+  elements.recordBtn?.addEventListener('click', toggleRecording);
   elements.transcribeAllBtn?.addEventListener('click', transcribeAll);
   elements.clearBtn?.addEventListener('click', async (e) => {
     // Shift+Click bypasses confirmation; also skip if confirmClear is false
@@ -1404,20 +1401,6 @@ export async function init(container) {
       handleAudioFileUpload(file);
     }
   });
-
-  // Mic selector handlers
-  elements.micEnableBtn?.addEventListener('click', handleMicEnableClick);
-  elements.micSelector?.addEventListener('change', handleMicSelectorChange);
-  
-  // Subscribe to audio device changes to update UI
-  audioDevices.subscribe(() => {
-    updateMicSelector();
-    updateMicStatusPill();
-  });
-  
-  // Initial mic UI update
-  updateMicSelector();
-  updateMicStatusPill();
 
   // Clip actions handler
   elements.clipsContainer?.addEventListener('click', (e) => {
