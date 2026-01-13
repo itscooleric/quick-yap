@@ -313,6 +313,9 @@ export function isEnabled() {
   return metricsEnabled;
 }
 
+// Export refreshData for external use
+export { refreshData };
+
 // Format seconds to minutes
 function formatMinutes(seconds) {
   if (!seconds || seconds <= 0) return '0';

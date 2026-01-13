@@ -32,6 +32,20 @@ function showMessage(text, type = '') {
   }
 }
 
+// Show global toast notification (works anywhere)
+function showGlobalToast(message, type = '') {
+  const toast = document.getElementById('toastNotification');
+  if (toast) {
+    toast.textContent = message;
+    toast.className = 'toast-notification' + (type ? ' ' + type : '');
+    toast.style.display = 'block';
+    
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 2500);
+  }
+}
+
 // Switch tabs (in-page, no navigation)
 function switchTab(tabName) {
   if (tabName === activeTab) return;
@@ -52,6 +66,25 @@ function switchTab(tabName) {
   }
   
   activeTab = tabName;
+  
+  // Update FAB toolbar mode for current tab
+  updateFabMode(tabName);
+}
+
+// Update FAB toolbar mode based on current tab
+function updateFabMode(tabName) {
+  const asrButtons = document.querySelectorAll('#mobileToolbar [data-mode="asr"]');
+  const dataButtons = document.querySelectorAll('#mobileToolbar [data-mode="data"]');
+  
+  if (tabName === 'data') {
+    // Hide ASR buttons, show Data buttons
+    asrButtons.forEach(btn => btn.style.display = 'none');
+    dataButtons.forEach(btn => btn.style.display = 'flex');
+  } else {
+    // Show ASR buttons, hide Data buttons
+    asrButtons.forEach(btn => btn.style.display = 'flex');
+    dataButtons.forEach(btn => btn.style.display = 'none');
+  }
 }
 
 // Check backend availability
@@ -185,18 +218,12 @@ async function init() {
   // Initialize addon panel and settings
   initAddonPanel();
   
-  // Setup global Settings button - context-sensitive
+  // Setup global Settings button - works from all tabs
   const settingsBtn = document.getElementById('settingsBtn');
   if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
-      // Open ASR settings when on ASR tab
-      if (activeTab === 'asr') {
-        asr.openSettingsPanel();
-      } else if (activeTab === 'tts') {
-        // TTS settings could be added here in the future
-        // For now, open ASR settings as fallback
-        asr.openSettingsPanel();
-      }
+      // Open unified Settings panel from any tab
+      asr.openSettingsPanel();
     });
   }
   
@@ -208,6 +235,22 @@ async function init() {
       switchTab(tabName);
     });
   });
+  
+  // Setup Data tab Refresh FAB button
+  const mobileRefreshBtn = document.getElementById('mobileRefreshBtn');
+  if (mobileRefreshBtn) {
+    mobileRefreshBtn.addEventListener('click', async () => {
+      if (window.yapState?.data?.refreshData) {
+        try {
+          await window.yapState.data.refreshData();
+          showGlobalToast('Data refreshed', 'success');
+        } catch (err) {
+          console.error('Failed to refresh data:', err);
+          showGlobalToast('Refresh failed', 'error');
+        }
+      }
+    });
+  }
   
   // Setup recording indicator
   setupRecordingIndicator();
@@ -222,9 +265,13 @@ async function init() {
   // Check backend availability
   checkBackends();
   
+  // Initialize FAB mode for initial tab
+  updateFabMode(activeTab);
+  
   // Expose global helpers
   window.yapState = window.yapState || {};
   window.yapState.showMessage = showMessage;
+  window.yapState.showGlobalToast = showGlobalToast;
   window.yapState.data = data;  // Expose data module for ASR/TTS to record events
 }
 

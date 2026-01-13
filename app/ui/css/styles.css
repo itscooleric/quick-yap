@@ -157,6 +157,20 @@ h1::before {
   opacity: 0.8;
 }
 
+/* Settings button with icon */
+.settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.5rem;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
 /* Tab Content */
 .tab-content {
   display: none;

@@ -556,8 +556,14 @@ async function startRecording() {
           transcribeSingle(newClip.id).then(() => {
             // Auto-copy after transcription if enabled
             if (transcriptSettings.autoCopy) {
-              copyTranscript().then(() => {
-                showMessage('Transcribed and copied', 'success');
+              copyTranscript().then((success) => {
+                // Use global toast for reliable feedback
+                const toastFn = window.yapState?.showGlobalToast || showToast;
+                if (success) {
+                  toastFn('Transcribed and copied!', 'success');
+                } else {
+                  toastFn('Transcribed, but copy failed', 'error');
+                }
               });
             }
           });
