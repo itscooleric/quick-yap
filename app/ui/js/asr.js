@@ -5,6 +5,7 @@ import { util } from './util.js';
 import { createAddonWindow } from './addons.js';
 import { openExportPanel } from './export.js';
 import { storage } from './storage.js';
+import { audioDevices } from './audioDevices.js';
 
 // Import data module for metrics recording
 function getDataModule() {
@@ -220,6 +221,82 @@ function updateRecordingIndicator() {
 // Check if currently recording
 export function isRecording() {
   return mediaRecorder && mediaRecorder.state === 'recording';
+}
+
+// Microphone status pill and selector management
+function updateMicStatusPill() {
+  const pill = elements.micStatusPill;
+  const label = elements.micStatusLabel;
+  if (!pill || !label) return;
+  
+  const micLabel = audioDevices.getActiveMicLabel();
+  label.textContent = micLabel;
+  
+  // Update visual state
+  const isRecordingNow = isRecording();
+  pill.classList.toggle('recording', isRecordingNow);
+}
+
+function updateMicSelector() {
+  const selector = elements.micSelector;
+  const selectorWrapper = elements.micSelectorWrapper;
+  const enableBtn = elements.micEnableBtn;
+  
+  if (!selector) return;
+  
+  const devices = audioDevices.getDevices();
+  const shouldShow = audioDevices.shouldShowSelector();
+  const hasLabels = audioDevices.hasLabels();
+  
+  // Show/hide enable button based on permission state
+  if (enableBtn) {
+    enableBtn.style.display = hasLabels ? 'none' : 'inline-block';
+  }
+  
+  // Show/hide selector based on device availability
+  if (selectorWrapper) {
+    selectorWrapper.style.display = shouldShow ? 'block' : 'none';
+  }
+  
+  if (!shouldShow) return;
+  
+  // Populate selector options
+  const selectedId = audioDevices.getSelectedDeviceId();
+  selector.innerHTML = '';
+  
+  // Add default option
+  const defaultOpt = document.createElement('option');
+  defaultOpt.value = '';
+  defaultOpt.textContent = 'Default microphone';
+  defaultOpt.selected = !selectedId;
+  selector.appendChild(defaultOpt);
+  
+  // Add device options
+  devices.forEach(device => {
+    if (device.deviceId === 'default') return; // Skip duplicate default
+    const opt = document.createElement('option');
+    opt.value = device.deviceId;
+    opt.textContent = device.label || `Microphone (${device.deviceId.substring(0, 8)}...)`;
+    opt.selected = device.deviceId === selectedId;
+    selector.appendChild(opt);
+  });
+}
+
+async function handleMicEnableClick() {
+  const success = await audioDevices.requestMicPermission();
+  if (success) {
+    updateMicSelector();
+    updateMicStatusPill();
+    showMessage('Microphone access enabled', 'success');
+  } else {
+    showMessage('Microphone access denied', 'error');
+  }
+}
+
+function handleMicSelectorChange(e) {
+  const deviceId = e.target.value || null;
+  audioDevices.selectDevice(deviceId);
+  updateMicStatusPill();
 }
 
 // Bar meter visualization
@@ -496,7 +573,31 @@ function handleAudioFileUpload(file) {
 // Recording
 async function startRecording() {
   try {
-    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Get audio constraints from device manager (selected device or default)
+    let audioConstraints = audioDevices.getAudioConstraints();
+    let usedFallback = false;
+    
+    try {
+      audioStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+    } catch (constraintErr) {
+      // If specific device fails (OverconstrainedError/NotFoundError), fall back to default
+      if (constraintErr.name === 'OverconstrainedError' || constraintErr.name === 'NotFoundError') {
+        console.warn('Selected device unavailable, falling back to default:', constraintErr);
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: audioDevices.getFallbackConstraints() });
+        usedFallback = true;
+        showMessage('Selected mic unavailable, using default', 'warning');
+      } else {
+        throw constraintErr;
+      }
+    }
+
+    // Update actual active device from the opened stream
+    const audioTrack = audioStream.getAudioTracks()[0];
+    if (audioTrack) {
+      const settings = audioTrack.getSettings();
+      audioDevices.setActualActiveDeviceId(settings.deviceId || null);
+      updateMicStatusPill();
+    }
 
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioContext.createAnalyser();
@@ -540,6 +641,7 @@ async function startRecording() {
 
       if (audioStream) {
         audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
       }
       if (audioContext) {
         const ctx = audioContext;
@@ -547,6 +649,10 @@ async function startRecording() {
         analyser = null;
         ctx.close().catch(err => console.warn('AudioContext close error:', err));
       }
+      
+      // Clear actual active device (no longer recording)
+      audioDevices.setActualActiveDeviceId(null);
+      updateMicStatusPill();
 
       setStatus('done', 'Clip saved');
       
@@ -1216,6 +1322,9 @@ export async function init(container) {
   // Initialize IndexedDB storage
   storageInitialized = await storage.initDB();
   
+  // Initialize audio devices module
+  await audioDevices.init();
+  
   // Cache DOM elements
   elements = {
     recordBtn: container.querySelector('#recordBtn'),
@@ -1235,7 +1344,13 @@ export async function init(container) {
     clipsCount: container.querySelector('#clipsCount'),
     fileInput: container.querySelector('#asrFileInput'),
     uploadBtn: container.querySelector('#asrUploadBtn'),
-    fileName: container.querySelector('#asrFileName')
+    fileName: container.querySelector('#asrFileName'),
+    // Mic selector elements
+    micStatusPill: container.querySelector('#micStatusPill'),
+    micStatusLabel: container.querySelector('#micStatusLabel'),
+    micSelector: container.querySelector('#micSelector'),
+    micSelectorWrapper: container.querySelector('#micSelectorWrapper'),
+    micEnableBtn: container.querySelector('#micEnableBtn')
   };
   
   if (elements.canvas) {
@@ -1280,6 +1395,20 @@ export async function init(container) {
       handleAudioFileUpload(file);
     }
   });
+
+  // Mic selector handlers
+  elements.micEnableBtn?.addEventListener('click', handleMicEnableClick);
+  elements.micSelector?.addEventListener('change', handleMicSelectorChange);
+  
+  // Subscribe to audio device changes to update UI
+  audioDevices.subscribe(() => {
+    updateMicSelector();
+    updateMicStatusPill();
+  });
+  
+  // Initial mic UI update
+  updateMicSelector();
+  updateMicStatusPill();
 
   // Clip actions handler
   elements.clipsContainer?.addEventListener('click', (e) => {
