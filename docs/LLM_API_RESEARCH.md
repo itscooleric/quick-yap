@@ -4,10 +4,13 @@
 
 This document evaluates LLM (Large Language Model) API providers for integration with Yap's upcoming chat tab feature. After comparing OpenWebUI, Ollama, n8n, and other providers, **we recommend Ollama as the primary provider for the MVP** due to its simplicity, privacy, and existing integration pattern in Yap.
 
+> **📄 See also**: [OpenWebUI Detailed Analysis](OPENWEBUI_ANALYSIS.md) - In-depth comparison of OpenWebUI vs Ollama with implementation effort analysis, API details, and code examples.
+
 ### Quick Recommendation
 
-- **MVP Provider**: Ollama
-- **Alternative/Future**: OpenWebUI (for advanced UI features), LiteLLM (for multi-provider support)
+- **MVP Provider**: Ollama (6-8 days implementation)
+- **Alternative**: OpenWebUI (10-12 days, +50% effort, includes RAG/web search)
+- **Best Approach**: Hybrid - Ship Ollama MVP, add OpenWebUI as optional backend later
 - **Architecture**: Simple proxy service that forwards chat requests to provider
 
 ---
