@@ -15,7 +15,7 @@ A lightweight proxy service that forwards chat requests from Yap to configured L
 
 Any LLM provider with an OpenAI-compatible `/v1/chat/completions` endpoint:
 
-- **Ollama**: Set `LLM_PROVIDER_URL=http://ollama:11434` (note: Ollama needs proxy for OpenAI compatibility)
+- **Ollama**: Set `LLM_PROVIDER_URL=http://ollama:11434` (Ollama 0.1.0+ exposes a native OpenAI-compatible `/v1/chat/completions` endpoint)
 - **OpenWebUI**: Set `LLM_PROVIDER_URL=http://openwebui:8080`
 - **OpenAI**: Set `LLM_PROVIDER_URL=https://api.openai.com` + `LLM_API_KEY=sk-...`
 - **LocalAI**: Set `LLM_PROVIDER_URL=http://localai:8080`
