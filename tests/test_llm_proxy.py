@@ -5,9 +5,31 @@ Tests for LLM Proxy Service
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, Mock
-from services.llm_proxy.app import app
+import importlib.util
+import sys
+from pathlib import Path
 
 
+def _load_llm_proxy_app():
+    """
+    Dynamically load the LLM proxy app from the services/llm-proxy directory
+    and register it under the logical module name 'services.llm_proxy.app'.
+    """
+    tests_dir = Path(__file__).resolve().parent
+    project_root = tests_dir.parent
+    app_path = project_root / "services" / "llm-proxy" / "app.py"
+
+    spec = importlib.util.spec_from_file_location("services.llm_proxy.app", app_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load LLM proxy app from {app_path}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module.app
+
+
+app = _load_llm_proxy_app()
 client = TestClient(app)
 
 
