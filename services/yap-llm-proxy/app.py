@@ -18,12 +18,36 @@ import httpx
 
 
 # Configuration from environment
+def _get_int_env(name: str, default: int) -> int:
+    """Safely parse an integer environment variable with a default fallback."""
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        print(f"[WARN] Invalid value for {name}={raw!r}; using default {default}")
+        return default
+
+
+def _get_float_env(name: str, default: float) -> float:
+    """Safely parse a float environment variable with a default fallback."""
+    raw = os.getenv(name)
+    if raw is None or raw == "":
+        return default
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        print(f"[WARN] Invalid value for {name}={raw!r}; using default {default}")
+        return default
+
+
 LLM_PROVIDER_URL = os.getenv("LLM_PROVIDER_URL", "")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 LLM_MODEL = os.getenv("LLM_MODEL", "gpt-3.5-turbo")
-LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT", "60"))
-LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "2000"))
-LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.7"))
+LLM_TIMEOUT = _get_int_env("LLM_TIMEOUT", 60)
+LLM_MAX_TOKENS = _get_int_env("LLM_MAX_TOKENS", 2000)
+LLM_TEMPERATURE = _get_float_env("LLM_TEMPERATURE", 0.7)
 
 # CORS configuration
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:*,https://localhost:*").split(",")
