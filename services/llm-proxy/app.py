@@ -41,7 +41,7 @@ class Message(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    message: str = Field(..., description="User message to send to LLM")
+    message: str = Field(..., min_length=1, description="User message to send to LLM")
     conversationHistory: List[Message] = Field(default=[], description="Previous messages in conversation")
     model: str = Field(default=DEFAULT_MODEL, description="Model to use for generation")
     temperature: Optional[float] = Field(default=0.7, ge=0.0, le=2.0, description="Temperature for generation")
