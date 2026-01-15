@@ -17,7 +17,7 @@ Local LAN web tools for speech-to-text (ASR) and text-to-speech (TTS).
 
 ## Quick Navigation
 
-**Tabs:** [ASR](#asr-tab) | [TTS](#tts-tab) | [Export](#export) | [Data](#data-tab-metrics) | [Settings](#configuration)
+**Tabs:** [ASR](#asr-tab) | [TTS](#tts-tab) | [Chat](#chat-tab) | [Export](#export) | [Data](#data-tab-metrics) | [Settings](#configuration)
 
 **Documentation:**
 - 📖 [User Guide](docs/USER_GUIDE.md) - Complete interface and workflow documentation
@@ -38,6 +38,7 @@ Yap provides a unified web application combining ASR (speech-to-text) and TTS (t
 |---------|-------------|---------|
 | **ASR** | Record audio and transcribe to text | OpenAI Whisper |
 | **TTS** | Convert text to natural speech | Piper TTS |
+| **Chat** | Voice conversations with LLMs | Ollama |
 
 The application runs as Docker containers with a terminal-style dark UI, designed for private LAN use.
 
@@ -47,6 +48,7 @@ Yap uses a **single-domain architecture** where:
 - UI is served at `https://APP_DOMAIN/`
 - ASR API is routed at `https://APP_DOMAIN/asr/*`
 - TTS API is routed at `https://APP_DOMAIN/tts/*`
+- LLM Proxy is routed at `https://APP_DOMAIN/llm/*`
 
 This is achieved via Caddy labels (production) or nginx proxy (local mode).
 
@@ -74,6 +76,21 @@ This is achieved via Caddy labels (production) or nginx proxy (local mode).
 - Keyboard shortcut: Ctrl+Enter to synthesize
 
 **See the [User Guide](docs/USER_GUIDE.md) for detailed TTS documentation.**
+
+### Chat Tab
+- Voice-based conversations with local LLMs via Ollama
+- Record audio → transcribe → send to LLM workflow
+- Alternative text input mode for direct typing
+- Conversation history with message bubbles (user and assistant)
+- Markdown rendering in LLM responses (code blocks, formatting)
+- Export conversations to GitLab/GitHub as formatted transcripts
+- Persistent conversation storage (automatically saves)
+- Configurable model, temperature, and system prompts
+- Support for multiple Ollama models (llama3.2, gemma3, etc.)
+
+**Prerequisites**: Ollama must be installed and running (`ollama serve`)
+
+**See the [Chat Design Documentation](docs/CHAT_UI_DESIGN.md) for detailed Chat documentation.**
 
 ### Export
 - Export transcripts to **GitLab** or **GitHub** repositories (commit files directly)
@@ -199,7 +216,44 @@ make tts-model-cori  # Shows download commands
 
 **Note**: TTS will start even without models, but will show a clear warning message. See [Troubleshooting](#troubleshooting) for details.
 
-#### 5. Start Services
+#### 5. Install Ollama (Optional - for Chat Tab)
+
+The Chat tab requires Ollama to be installed and running on the host machine:
+
+```bash
+# macOS
+brew install ollama
+
+# Linux
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Windows
+# Download from https://ollama.com
+```
+
+Pull a model:
+
+```bash
+ollama pull llama3.2  # Recommended 3B model
+# Or: ollama pull llama3.2:1b  # Faster, 1B model
+# Or: ollama pull gemma3        # Google's Gemma model
+```
+
+Start Ollama (runs automatically on macOS/Windows):
+
+```bash
+ollama serve
+```
+
+Verify it's running:
+
+```bash
+curl http://localhost:11434/api/tags
+```
+
+**Note**: The Chat tab will show clear error messages if Ollama is not running, but the rest of Yap will work normally.
+
+#### 6. Start Services
 
 **Production Mode (with Caddy):**
 
@@ -255,6 +309,9 @@ The original separate ASR and TTS deployments are still available in `asr/` and 
 | `ASR_MODEL` | Whisper model size | `tiny.en` |
 | `ASR_ENGINE` | ASR engine | `faster_whisper` |
 | `ASR_DEVICE` | Compute device | `cuda` |
+| `OLLAMA_URL` | Ollama API URL | `http://host.docker.internal:11434` |
+| `DEFAULT_MODEL` | Default LLM model | `llama3.2` |
+| `REQUEST_TIMEOUT` | LLM request timeout (seconds) | `120` |
 
 For legacy separate deployments:
 | `ASR_DOMAIN` | ASR domain (legacy mode) | `asr.localhost` |

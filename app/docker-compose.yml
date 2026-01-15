@@ -61,8 +61,14 @@ services:
       caddy.11_@metrics.path: /api/metrics /api/metrics/*
       caddy.12_reverse_proxy: "@metrics yap-metrics:8091"
       
+      # LLM Proxy API routing - proxy to llm-proxy
+      caddy.13_@llm.path: /llm /llm/*
+      caddy.14_handle: "@llm"
+      caddy.14_handle.uri: "strip_prefix /llm"
+      caddy.14_handle.reverse_proxy: "llm-proxy:8000"
+      
       # Default: serve static UI
-      caddy.13_reverse_proxy: "{{upstreams 80}}"
+      caddy.15_reverse_proxy: "{{upstreams 80}}"
 
   # Whisper ASR Backend
   whisper-asr:
@@ -124,6 +130,26 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:*,https://localhost:*}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8091/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # LLM Proxy Service
+  llm-proxy:
+    build:
+      context: ../services/llm-proxy
+      dockerfile: Dockerfile
+    container_name: yap-llm-proxy
+    restart: unless-stopped
+    networks: [caddy]
+    environment:
+      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-llama3.2}
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-120}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:*,https://localhost:*}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
