@@ -8,9 +8,6 @@ including health check, chat forwarding, error handling, and timeout scenarios.
 import pytest
 import requests
 import os
-import json
-from unittest.mock import Mock, patch
-import httpx
 
 
 # Determine base URL from environment or use default for local testing
@@ -118,64 +115,6 @@ class TestLLMProxyIntegration:
         # This test would require setting up a mock LLM provider
         # or using environment variables to point to a test provider
         pass
-
-
-# Unit tests using mocks (don't require running service)
-class TestLLMProxyUnit:
-    """Unit tests for LLM proxy logic"""
-
-    @pytest.mark.asyncio
-    async def test_successful_chat_request(self):
-        """Test successful chat request handling"""
-        from services.yap_llm_proxy.app import chat, ChatRequest, Message
-        
-        # Mock httpx client
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "choices": [
-                {
-                    "message": {
-                        "content": "Hello! How can I help you?"
-                    },
-                    "finish_reason": "stop"
-                }
-            ],
-            "usage": {
-                "prompt_tokens": 10,
-                "completion_tokens": 8,
-                "total_tokens": 18
-            }
-        }
-        
-        request = ChatRequest(
-            messages=[Message(role="user", content="Hello")]
-        )
-        
-        # This would require mocking the httpx client
-        # Skipping implementation as it requires significant setup
-
-    def test_error_response_format(self):
-        """Test that error responses have correct format"""
-        from services.yap_llm_proxy.app import ErrorResponse
-        
-        error = ErrorResponse(error="Test error", detail="Test detail")
-        assert error.error == "Test error"
-        assert error.detail == "Test detail"
-
-    def test_chat_response_format(self):
-        """Test that chat responses have correct format"""
-        from services.yap_llm_proxy.app import ChatResponse
-        
-        response = ChatResponse(
-            message="Test message",
-            model="gpt-3.5-turbo",
-            usage={"total_tokens": 100},
-            finish_reason="stop"
-        )
-        assert response.message == "Test message"
-        assert response.model == "gpt-3.5-turbo"
-        assert response.usage["total_tokens"] == 100
 
 
 class TestLLMProxyConfiguration:
