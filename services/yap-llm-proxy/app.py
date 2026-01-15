@@ -79,7 +79,7 @@ class ChatRequest(BaseModel):
     model: Optional[str] = Field(None, description="Model to use (overrides default)")
     temperature: Optional[float] = Field(None, ge=0.0, le=2.0, description="Sampling temperature")
     max_tokens: Optional[int] = Field(None, ge=1, description="Maximum tokens in response")
-    stream: bool = Field(False, description="Stream response (not yet supported)")
+    stream: bool = Field(False, description="Stream response (not supported)")
 
 
 class ChatResponse(BaseModel):
@@ -148,7 +148,7 @@ async def chat(request: ChatRequest):
     if request.stream:
         raise HTTPException(
             status_code=400,
-            detail="Streaming is not yet supported"
+            detail="Streaming is not supported"
         )
     
     # Build OpenAI-compatible request

@@ -103,7 +103,7 @@ class TestLLMProxyChat:
         # Should return 400 or 503 (if provider not configured)
         if response.status_code == 400:
             data = response.json()
-            assert 'streaming' in data['detail'].lower() or 'not.*supported' in data['detail'].lower()
+            assert 'streaming' in data['detail'].lower() or 'not' in data['detail'].lower() and 'supported' in data['detail'].lower()
 
 
 @pytest.mark.integration
