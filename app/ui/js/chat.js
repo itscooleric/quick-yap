@@ -40,7 +40,8 @@ let chatSettings = {
   systemPrompt: 'You are a helpful assistant.',
   autoSend: false,
   confirmClear: true,
-  markdownEnabled: true
+  markdownEnabled: true,
+  maxContextMessages: 10  // Number of previous messages to include in LLM context
 };
 
 // Load settings from localStorage
@@ -54,7 +55,8 @@ function loadSettings() {
     systemPrompt: util.storage.get('settings.chat.systemPrompt', 'You are a helpful assistant.'),
     autoSend: util.storage.get('settings.chat.autoSend', false),
     confirmClear: util.storage.get('settings.chat.confirmClear', true),
-    markdownEnabled: util.storage.get('settings.chat.markdownEnabled', true)
+    markdownEnabled: util.storage.get('settings.chat.markdownEnabled', true),
+    maxContextMessages: util.storage.get('settings.chat.maxContextMessages', 10)
   };
 }
 
@@ -69,6 +71,7 @@ function saveSettings() {
   util.storage.set('settings.chat.autoSend', chatSettings.autoSend);
   util.storage.set('settings.chat.confirmClear', chatSettings.confirmClear);
   util.storage.set('settings.chat.markdownEnabled', chatSettings.markdownEnabled);
+  util.storage.set('settings.chat.maxContextMessages', chatSettings.maxContextMessages);
 }
 
 // Update settings (called from settings panel)
@@ -79,7 +82,7 @@ function updateSettings(newSettings) {
 
 // Generate unique ID for messages
 function generateId() {
-  return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
 // Format timestamp for display
@@ -477,13 +480,17 @@ function startWaveform() {
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
   
+  // Get CSS color variables
+  const bgTertiary = getComputedStyle(document.documentElement).getPropertyValue('--bg-tertiary').trim();
+  const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  
   function draw() {
     if (!isRecording) return;
     
     animationId = requestAnimationFrame(draw);
     analyser.getByteFrequencyData(dataArray);
     
-    canvasCtx.fillStyle = 'var(--bg-tertiary)';
+    canvasCtx.fillStyle = bgTertiary;
     canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
     
     const barWidth = canvas.width / BAR_COUNT;
@@ -494,7 +501,11 @@ function startWaveform() {
       const x = i * barWidth;
       const y = canvas.height - barHeight;
       
-      canvasCtx.fillStyle = `rgba(255, 41, 117, ${0.5 + value / 510})`;
+      // Parse RGB from accent color or use fallback
+      const alpha = 0.5 + value / 510;
+      canvasCtx.fillStyle = accentColor.startsWith('#') 
+        ? `${accentColor}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`
+        : `rgba(255, 41, 117, ${alpha})`;
       canvasCtx.fillRect(x, y, barWidth - 2, barHeight);
     }
   }
@@ -654,7 +665,9 @@ async function sendMessage() {
         content: m.content
       }));
     
-    // Call LLM proxy
+    // Call LLM proxy - use last N messages for context
+    const contextMessages = conversationHistory.slice(-chatSettings.maxContextMessages);
+    
     const response = await fetch(`${chatSettings.llmEndpoint}/chat`, {
       method: 'POST',
       headers: {
@@ -663,7 +676,7 @@ async function sendMessage() {
       },
       body: JSON.stringify({
         message: messageContent,
-        conversationHistory: conversationHistory.slice(-10),  // Last 10 messages for context
+        conversationHistory: contextMessages,
         model: chatSettings.llmModel,
         temperature: chatSettings.temperature,
         systemPrompt: chatSettings.systemPrompt

@@ -7,7 +7,7 @@ Handles CORS, error formatting, and provides a simple API for the Yap chat tab.
 import os
 import httpx
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -144,7 +144,7 @@ async def chat(request: ChatRequest):
             return ChatResponse(
                 response=assistant_message,
                 model=request.model,
-                timestamp=datetime.utcnow().isoformat() + "Z"
+                timestamp=datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
             )
             
         except httpx.TimeoutException:
