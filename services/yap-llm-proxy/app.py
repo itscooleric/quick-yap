@@ -167,7 +167,7 @@ async def chat(request: ChatRequest):
     # Use provided parameters or defaults
     model = request.model or LLM_MODEL
     temperature = request.temperature if request.temperature is not None else LLM_TEMPERATURE
-    max_tokens = request.max_tokens or LLM_MAX_TOKENS
+    max_tokens = request.max_tokens if request.max_tokens is not None else LLM_MAX_TOKENS
     
     if request.stream:
         raise HTTPException(
