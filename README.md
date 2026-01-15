@@ -38,6 +38,9 @@ Yap provides a unified web application combining ASR (speech-to-text) and TTS (t
 |---------|-------------|---------|
 | **ASR** | Record audio and transcribe to text | OpenAI Whisper |
 | **TTS** | Convert text to natural speech | Piper TTS |
+| **Metrics** | Local usage tracking and analytics | FastAPI + SQLite |
+| **Export** | Export to GitLab, GitHub, SFTP, webhooks | FastAPI + httpx |
+| **LLM Proxy** | Forward chat requests to LLM providers (optional) | FastAPI + httpx |
 
 The application runs as Docker containers with a terminal-style dark UI, designed for private LAN use.
 
@@ -47,6 +50,8 @@ Yap uses a **single-domain architecture** where:
 - UI is served at `https://APP_DOMAIN/`
 - ASR API is routed at `https://APP_DOMAIN/asr/*`
 - TTS API is routed at `https://APP_DOMAIN/tts/*`
+- Metrics API is routed at `https://APP_DOMAIN/api/metrics/*`
+- LLM Proxy API is routed at `https://APP_DOMAIN/api/llm/*` (optional, for chat feature)
 
 This is achieved via Caddy labels (production) or nginx proxy (local mode).
 
@@ -95,6 +100,29 @@ This is achieved via Caddy labels (production) or nginx proxy (local mode).
 - When disabled, shows one-click enable button
 
 **See the [Data & Metrics Guide](docs/DATA.md) for complete documentation.**
+
+### LLM Proxy Service (Optional)
+- **Backend proxy service** for forwarding chat requests to LLM providers
+- Supports **OpenAI-compatible APIs** (OpenWebUI, Ollama, OpenAI, LocalAI, n8n, etc.)
+- **Authentication support** with API key configuration
+- **Configurable parameters**: model selection, temperature, max tokens, timeout
+- **Error handling**: Graceful handling of timeouts, connection errors, and provider errors
+- **Request logging**: All requests/responses logged for debugging
+- **Privacy-first**: LLM provider credentials stored server-side, never exposed to browser
+- Designed for the upcoming **Chat feature** (voice-to-LLM conversation interface)
+
+**Configuration:**
+```bash
+# Optional - only needed for chat feature
+LLM_PROVIDER_URL=http://localhost:11434  # Your LLM provider URL
+LLM_API_KEY=                             # Optional API key
+LLM_MODEL=gpt-3.5-turbo                  # Default model
+LLM_TIMEOUT=60                           # Request timeout in seconds
+LLM_MAX_TOKENS=2000                      # Max tokens in response
+LLM_TEMPERATURE=0.7                      # Sampling temperature
+```
+
+**See [services/yap-llm-proxy/README.md](services/yap-llm-proxy/README.md) for complete documentation.**
 
 ### Apps (Optional)
 > **Note**: The Apps ecosystem is disabled by default. Enable it by setting `enableApps: true` in `app/ui/config.js`.
