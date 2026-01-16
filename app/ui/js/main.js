@@ -216,7 +216,7 @@ async function init() {
   
   // Initialize Chat
   if (tabs.chat) {
-    chat.init();
+    await chat.init(tabs.chat);
   }
   
   // Initialize Data/Metrics tab
