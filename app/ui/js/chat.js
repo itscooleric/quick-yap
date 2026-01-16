@@ -87,7 +87,7 @@ function showToast(message, type = '') {
 
 // Generate unique message ID
 function generateMessageId() {
-  return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 // Add message to conversation
@@ -198,11 +198,11 @@ function renderMessages() {
           </div>
           <div class="msg-content">${escapeHtml(msg.text)}</div>
           <div class="msg-actions">
-            <button class="msg-btn msg-select" data-action="select" data-id="${msg.id}" title="Select for export">
+            <button class="msg-btn msg-select" data-action="select" data-id="${msg.id}" title="Select for export" aria-label="${isSelected ? 'Deselect message' : 'Select message'}">
               ${isSelected ? '☑' : '☐'}
             </button>
-            <button class="msg-btn msg-copy" data-action="copy" data-id="${msg.id}" title="Copy">📋</button>
-            <button class="msg-btn msg-delete" data-action="delete" data-id="${msg.id}" title="Delete">🗑</button>
+            <button class="msg-btn msg-copy" data-action="copy" data-id="${msg.id}" title="Copy message" aria-label="Copy message">📋</button>
+            <button class="msg-btn msg-delete" data-action="delete" data-id="${msg.id}" title="Delete message" aria-label="Delete message">🗑</button>
           </div>
         </div>
       `;
@@ -215,11 +215,11 @@ function renderMessages() {
           </div>
           <div class="msg-content">${escapeHtml(msg.text)}</div>
           <div class="msg-actions">
-            <button class="msg-btn msg-select" data-action="select" data-id="${msg.id}" title="Select for export">
+            <button class="msg-btn msg-select" data-action="select" data-id="${msg.id}" title="Select for export" aria-label="${isSelected ? 'Deselect message' : 'Select message'}">
               ${isSelected ? '☑' : '☐'}
             </button>
-            <button class="msg-btn msg-copy" data-action="copy" data-id="${msg.id}" title="Copy">📋</button>
-            <button class="msg-btn msg-delete" data-action="delete" data-id="${msg.id}" title="Delete">🗑</button>
+            <button class="msg-btn msg-copy" data-action="copy" data-id="${msg.id}" title="Copy message" aria-label="Copy message">📋</button>
+            <button class="msg-btn msg-delete" data-action="delete" data-id="${msg.id}" title="Delete message" aria-label="Delete message">🗑</button>
           </div>
         </div>
       `;
@@ -363,7 +363,9 @@ async function sendToLLM(userMessage) {
     
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
-      throw new Error(`LLM API error ${response.status}: ${errorText.substring(0, 200)}`);
+      // Sanitize error message to avoid exposing sensitive information
+      const sanitizedError = errorText.length > 100 ? 'Request failed' : errorText.replace(/[<>]/g, '');
+      throw new Error(`LLM API error ${response.status}: ${sanitizedError}`);
     }
     
     const result = await response.json();
@@ -464,7 +466,7 @@ function handleExport() {
   
   openExportPanel(
     () => getConversationText(shouldExportSelected),
-    () => [] // No clips in chat context
+    () => [] // Chat doesn't use clips - only text-based conversation
   );
 }
 
