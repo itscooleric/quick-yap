@@ -2,22 +2,21 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
+# Install curl for healthcheck
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application
-COPY app.py .
+# Copy application code
+COPY main.py .
 
-# Environment defaults
-ENV LLM_PROVIDER_URL=""
-ENV LLM_API_KEY=""
-ENV LLM_MODEL="gpt-3.5-turbo"
-ENV LLM_TIMEOUT="60"
-ENV LLM_MAX_TOKENS="2000"
-ENV LLM_TEMPERATURE="0.7"
-ENV LOG_REQUESTS="true"
-
+# Expose port
 EXPOSE 8092
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8092"]
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8092"]

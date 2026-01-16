@@ -1,154 +1,180 @@
 # YAP LLM Proxy Service
 
-A lightweight proxy service that forwards chat requests from Yap to configured LLM providers.
+A lightweight proxy service that forwards chat requests to OpenAI-compatible LLM providers.
 
 ## Features
 
-- **OpenAI-compatible API**: Works with any provider that supports the OpenAI chat completions format
-- **Multiple providers**: OpenWebUI, Ollama, OpenAI, n8n, and more
-- **Authentication**: Supports API key authentication
-- **Error handling**: Graceful handling of timeouts, connection errors, and provider errors
-- **Request logging**: Logs all requests and responses for debugging
-- **Configurable**: All settings via environment variables
-
-## Supported Providers
-
-Any LLM provider with an OpenAI-compatible `/v1/chat/completions` endpoint:
-
-- **Ollama**: Set `LLM_PROVIDER_URL=http://ollama:11434` (Ollama 0.1.0+ exposes a native OpenAI-compatible `/v1/chat/completions` endpoint)
-- **OpenWebUI**: Set `LLM_PROVIDER_URL=http://openwebui:8080`
-- **OpenAI**: Set `LLM_PROVIDER_URL=https://api.openai.com` + `LLM_API_KEY=sk-...`
-- **LocalAI**: Set `LLM_PROVIDER_URL=http://localai:8080`
-- **n8n**: Configure n8n to expose OpenAI-compatible endpoint
+- **OpenAI-compatible API**: Works with OpenWebUI, Ollama, OpenAI, and other compatible providers
+- **Error handling**: Proper timeout and connection error handling with meaningful messages
+- **Logging**: Comprehensive request/response logging for debugging
+- **Health checks**: Built-in health endpoint for monitoring
+- **CORS support**: Configurable CORS for frontend integration
+- **Validation**: Request validation using Pydantic models
 
 ## Configuration
 
-Environment variables:
+Set the following environment variables:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `LLM_PROVIDER_URL` | _(required)_ | Base URL of LLM provider |
-| `LLM_API_KEY` | _(optional)_ | API key for authentication |
-| `LLM_MODEL` | `gpt-3.5-turbo` | Default model to use |
-| `LLM_TIMEOUT` | `60` | Request timeout in seconds |
-| `LLM_MAX_TOKENS` | `2000` | Maximum tokens in response |
-| `LLM_TEMPERATURE` | `0.7` | Sampling temperature (0.0-2.0) |
-| `LOG_REQUESTS` | `true` | Log requests/responses for debugging |
-| `CORS_ORIGINS` | `http://localhost:*,...` | Allowed CORS origins |
+```bash
+# Required: URL to your LLM provider's OpenAI-compatible endpoint
+LLM_PROVIDER_URL=http://localhost:11434/v1/chat/completions
 
-## API Endpoints
+# Optional: API key if your provider requires authentication
+LLM_API_KEY=
 
-### `GET /health`
+# Optional: Default model to use (can be overridden per request)
+LLM_MODEL=llama3
 
-Health check endpoint.
+# Optional: Request timeout in seconds
+LLM_TIMEOUT=60
+
+# Optional: CORS origins (comma-separated or *)
+CORS_ORIGINS=*
+```
+
+## Endpoints
+
+### GET /
+API information and available endpoints.
+
+### GET /health
+Health check endpoint returning service status and configuration.
 
 **Response:**
 ```json
 {
   "status": "ok",
-  "service": "llm-proxy",
+  "service": "yap-llm-proxy",
+  "version": "1.0.0",
   "provider_configured": true,
-  "model": "gpt-3.5-turbo"
+  "model": "llama3",
+  "timestamp": "2024-01-14T12:00:00"
 }
 ```
 
-### `POST /chat`
-
-Forward chat request to LLM provider.
+### POST /chat
+Forward chat completion request to LLM provider.
 
 **Request:**
 ```json
 {
   "messages": [
-    {"role": "user", "content": "Hello!"}
+    {"role": "user", "content": "Hello, how are you?"}
   ],
-  "model": "gpt-3.5-turbo",
+  "model": "llama3",
   "temperature": 0.7,
-  "max_tokens": 2000
+  "max_tokens": 1000
 }
 ```
 
-**Response (Success):**
+**Response:**
 ```json
 {
-  "message": "Hello! How can I help you today?",
-  "model": "gpt-3.5-turbo",
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1234567890,
+  "model": "llama3",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "I'm doing well, thank you for asking!"
+      },
+      "finish_reason": "stop"
+    }
+  ],
   "usage": {
     "prompt_tokens": 10,
     "completion_tokens": 15,
     "total_tokens": 25
-  },
-  "finish_reason": "stop"
+  }
 }
 ```
 
-**Response (Error):**
-```json
-{
-  "detail": "LLM provider not configured. Set LLM_PROVIDER_URL environment variable."
-}
+## Running Locally
+
+### With Docker
+
+```bash
+docker build -t yap-llm-proxy .
+docker run -p 8092:8092 \
+  -e LLM_PROVIDER_URL=http://host.docker.internal:11434/v1/chat/completions \
+  -e LLM_MODEL=llama3 \
+  yap-llm-proxy
 ```
 
-## Error Handling
+### With Python
 
-The service handles errors gracefully and returns meaningful HTTP status codes:
-
-- `400`: Bad request (e.g., streaming requested but not supported)
-- `502`: Cannot connect to LLM provider
-- `503`: LLM provider not configured
-- `504`: Request timed out
-- `500`: Unexpected error
-
-All errors are logged with request details for debugging.
-
-## Request Logging
-
-When `LOG_REQUESTS=true`, each request is logged as JSON:
-
-```json
-{
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "request": {
-    "model": "gpt-3.5-turbo",
-    "messages_count": 2,
-    "temperature": 0.7,
-    "max_tokens": 2000
-  },
-  "response": {
-    "message_length": 150,
-    "finish_reason": "stop",
-    "usage": {"total_tokens": 175}
-  },
-  "duration_seconds": 2.34
-}
-```
-
-## Development
-
-Run locally:
 ```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Set required environment variables
-export LLM_PROVIDER_URL=http://localhost:11434
-export LLM_MODEL=llama2
+# Set environment variables
+export LLM_PROVIDER_URL=http://localhost:11434/v1/chat/completions
+export LLM_MODEL=llama3
 
-# Run service
-python app.py
+# Run the service
+python main.py
 ```
-
-Service will start on http://localhost:8092
 
 ## Testing
 
-See `tests/test_llm_proxy.py` for unit and integration tests.
+```bash
+# Health check
+curl http://localhost:8092/health
+
+# Chat request
+curl -X POST http://localhost:8092/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {"role": "user", "content": "Hello!"}
+    ],
+    "temperature": 0.7,
+    "max_tokens": 100
+  }'
+```
+
+## Supported LLM Providers
+
+Any provider with an OpenAI-compatible API endpoint:
+
+- **Ollama**: `http://localhost:11434/v1/chat/completions`
+- **OpenWebUI**: `http://localhost:3000/v1/chat/completions`
+- **OpenAI**: `https://api.openai.com/v1/chat/completions`
+- **LocalAI**: `http://localhost:8080/v1/chat/completions`
+- **Text Generation WebUI (oobabooga)**: `http://localhost:5000/v1/chat/completions`
+- **LM Studio**: `http://localhost:1234/v1/chat/completions`
+
+## Error Handling
+
+The service returns appropriate HTTP status codes:
+
+- **200**: Success
+- **422**: Validation error (invalid request)
+- **502**: Bad gateway (provider returned error or unreachable)
+- **503**: Service unavailable (provider not configured)
+- **504**: Gateway timeout (request exceeded timeout)
+- **500**: Internal server error (unexpected error)
+
+## Security Notes
+
+- **API Keys**: Never commit API keys to version control
+- **CORS**: Configure `CORS_ORIGINS` appropriately for production
+- **Network**: Deploy behind a reverse proxy (Caddy) in production
+- **Timeouts**: Adjust `LLM_TIMEOUT` based on your provider's response times
+
+## Development
 
 ```bash
-# Unit tests (no LLM provider needed)
-pytest tests/test_llm_proxy.py -v -m "not integration"
+# Install dev dependencies
+pip install -r requirements.txt
 
-# Integration tests (requires running LLM provider)
-export LLM_BASE_URL=http://localhost:8092
-pytest tests/test_llm_proxy.py -v -m integration
+# Run with auto-reload
+uvicorn main:app --reload --host 0.0.0.0 --port 8092
 ```
+
+## License
+
+Part of the Yap project. See main project LICENSE file.
