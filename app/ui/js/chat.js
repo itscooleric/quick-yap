@@ -2,7 +2,6 @@
 // Voice-based conversations with LLMs using ASR recording + Ollama
 
 import { util } from './util.js';
-import { storage } from './storage.js';
 import { openExportPanel } from './export.js';
 
 // Chat State
@@ -214,7 +213,9 @@ function createMessageBubble(msg) {
     
     if (!isLoading) {
       const copyBtn = bubble.querySelector('[data-action="copy"]');
-      copyBtn.addEventListener('click', () => copyMessageContent(msg.id));
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => copyMessageContent(msg.id));
+      }
     }
   }
   

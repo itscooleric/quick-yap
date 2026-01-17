@@ -9,7 +9,7 @@ import httpx
 from typing import List, Optional
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -157,7 +157,7 @@ async def chat(request: ChatRequest):
             try:
                 error_data = e.response.json()
                 error_msg = error_data.get("error", str(e))
-            except:
+            except Exception:
                 error_msg = str(e)
             
             raise HTTPException(
